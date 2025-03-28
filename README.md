@@ -1,4 +1,4 @@
-# Crosschain Gov [![Open in Gitpod][gitpod-badge]][gitpod] [![Github Actions][gha-badge]][gha] [![Foundry][foundry-badge]][foundry] [![License: GPL-3.0][license-badge]][license]
+# Cross-chain Gov [![Open in Gitpod][gitpod-badge]][gitpod] [![Github Actions][gha-badge]][gha] [![Foundry][foundry-badge]][foundry] [![License: GPL-3.0][license-badge]][license]
 
 A cross-chain DAO governance framework that allows synchronization across multiple EVM networks.
 
