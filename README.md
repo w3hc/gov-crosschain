@@ -38,80 +38,11 @@ forge build
 
 ## Testing
 
-### Basic Testing
-
 Run the basic test suite:
 
 ```bash
 forge test
 ```
-
-### Cross-Chain Testing
-
-To test cross-chain functionality, you'll need to run multiple Anvil instances:
-
-```bash
-# Use the helper script to start all chains at once
-chmod +x setup-chains.sh
-./setup-chains.sh
-
-# Or start them manually in separate terminals
-# Terminal 1 - Optimism (Home Chain)
-anvil --chain-id 10 --port 8545 --block-time 2
-
-# Terminal 2 - Arbitrum
-anvil --chain-id 42161 --port 8546 --block-time 2
-
-# Terminal 3 - Base
-anvil --chain-id 8453 --port 8547 --block-time 2
-```
-
-Deploy to all chains:
-
-```bash
-# Deploy to Optimism (Home Chain)
-forge script script/Deploy.s.sol --rpc-url http://localhost:8545 --broadcast
-
-# Deploy to Arbitrum
-forge script script/Deploy.s.sol --rpc-url http://localhost:8546 --broadcast
-
-# Deploy to Base
-forge script script/Deploy.s.sol --rpc-url http://localhost:8547 --broadcast
-```
-
-After deployment, you can run the cross-chain tests:
-
-```bash
-# Install ethers.js if not already installed
-bun add ethers@5.7.2
-
-# Update the contract addresses in test-cross-chain.js
-# Then run the tests
-bun test-cross-chain.js
-```
-
-### Troubleshooting Deployment
-
-If you encounter errors during deployment:
-
-```bash
-# Clean up build artifacts and try again
-rm -rf cache out
-forge build
-
-# Check for proper ownership transfer
-# The deployer must be the owner of contracts to transfer ownership
-```
-
-## Understanding Cross-Chain Flow
-
-The cross-chain synchronization works as follows:
-
-1. Changes are made on the home chain (Optimism) through governance
-2. Cryptographic proofs are generated for these changes
-3. Proofs are submitted to foreign chains (Arbitrum, Base)
-4. Foreign chains verify and apply these changes
-5. State remains consistent across all chains
 
 ## Deployment
 
@@ -122,7 +53,7 @@ cp .env.example .env
 # Edit .env with your API keys and mnemonic
 ```
 
-Deploy to real networks:
+Deploy:
 
 ```bash
 # Deploy to Optimism
@@ -190,12 +121,3 @@ Feel free to reach out to [Julien](https://github.com/julienbrg) on [Farcaster](
 [Status](https://status.app/u/iwSACggKBkp1bGllbgM=#zQ3shmh1sbvE6qrGotuyNQB22XU5jTrZ2HFC8bA56d5kTS2fy),
 [Telegram](https://t.me/julienbrg), [Twitter](https://twitter.com/julienbrg),
 [Discord](https://discordapp.com/users/julienbrg), or [LinkedIn](https://www.linkedin.com/in/julienberanger/).
-
-[gitpod-badge]: https://img.shields.io/badge/Gitpod-Open%20in%20Gitpod-FFB45B?logo=gitpod
-[gitpod]: https://gitpod.io/#https://github.com/w3hc/gov-crosschain
-[gha-badge]: https://github.com/w3hc/gov-crosschain/actions/workflows/ci.yml/badge.svg
-[gha]: https://github.com/w3hc/gov-crosschain/actions
-[foundry-badge]: https://img.shields.io/badge/Built%20with-Foundry-FFDB1C.svg
-[foundry]: https://getfoundry.sh/
-[license-badge]: https://img.shields.io/badge/License-GPL%203.0-blue.svg
-[license]: https://opensource.org/licenses/GPL-3.0

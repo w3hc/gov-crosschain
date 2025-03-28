@@ -4,7 +4,6 @@ pragma solidity >=0.8.28;
 import { Test } from "forge-std/src/Test.sol";
 import { Gov } from "../src/Gov.sol";
 import { NFT } from "../src/NFT.sol";
-import { IGovernor } from "@openzeppelin/contracts/governance/IGovernor.sol";
 
 contract GovTest is Test {
     Gov public gov;
