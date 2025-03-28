@@ -132,7 +132,7 @@ Feel free to reach out to [Julien](https://github.com/julienbrg) on [Farcaster](
 
 ## Credits
 
-I want to thank [Paul Ravzan Berg](https://github.com/paulrberg) for his work on the
+I want to thank [Paul Razvan Berg](https://github.com/paulrberg) for his work on the
 [Foundry template](https://github.com/PaulRBerg/foundry-template) we used.
 
 ## License
