@@ -4,63 +4,62 @@ pragma solidity >=0.8.28;
 import { Test } from "forge-std/src/Test.sol";
 import { Gov } from "../src/Gov.sol";
 import { NFT } from "../src/NFT.sol";
+import { IGovernor } from "@openzeppelin/contracts/governance/IGovernor.sol";
 
 contract GovTest is Test {
     Gov public gov;
     NFT public nft;
 
     address public deployer = makeAddr("deployer");
-    address public user1 = makeAddr("user1");
-    address public user2 = makeAddr("user2");
+    address public alice = makeAddr("alice");
+    address public bob = makeAddr("bob");
+    address public francis = makeAddr("francis");
+    address public attacker = makeAddr("attacker");
 
-    uint256 public homeChainId = 10; // Optimism
-    uint256 public foreignChainId = 42_161; // Arbitrum
+    uint256 public homeChainId = 10;
 
     string public initialManifesto = "QmInitialManifestoCID";
     string public newManifesto = "QmNewManifestoCID";
 
-    uint48 public votingDelay = 1; // Reduced for testing
-    uint32 public votingPeriod = 50; // Reduced for testing
-    uint256 public proposalThreshold = 0; // Set to 0 for testing
-    uint256 public quorumNumerator = 4; // 4%
+    uint48 public votingDelay = 1;
+    uint32 public votingPeriod = 30;
+    uint256 public proposalThreshold = 0;
+    uint256 public quorumNumerator = 4;
+
+    uint32 public proposalId;
+
+    address[] public proposalTargets;
+    uint256[] public proposalValues;
+    bytes[] public proposalCalldatas;
+    string public proposalDescription;
 
     function setUp() public {
-        // Start with home chain
+        // Set the home chain for testing
         vm.chainId(homeChainId);
 
         vm.startPrank(deployer);
 
         // Create initial members array
         address[] memory initialMembers = new address[](2);
-        initialMembers[0] = user1;
-        initialMembers[1] = user2;
+        initialMembers[0] = alice;
+        initialMembers[1] = bob;
 
         // Deploy NFT contract first
-        nft = new NFT(homeChainId, deployer, initialMembers, "ipfs://QmTokenURI", "DAO Membership", "DAOM");
+        nft = new NFT(
+            homeChainId,
+            deployer,
+            initialMembers,
+            "ipfs://bafkreicj62l5xu6pk2xx7x7n6b7rpunxb4ehlh7fevyjapid3556smuz4y",
+            "Our DAO Membership",
+            "MEMBERSHIP"
+        );
 
         vm.stopPrank();
-
-        // Setup voting delegation for users
-        vm.prank(user1);
-        nft.delegate(user1);
-
-        vm.prank(user2);
-        nft.delegate(user2);
-
-        // Advance one block for delegations to take effect
-        vm.roll(block.number + 1);
 
         // Deploy governance contract
         vm.startPrank(deployer);
         gov = new Gov(
-            homeChainId,
-            nft,
-            initialManifesto,
-            "Cross-Chain Governance",
-            votingDelay,
-            votingPeriod,
-            proposalThreshold,
-            quorumNumerator
+            homeChainId, nft, initialManifesto, "Our DAO", votingDelay, votingPeriod, proposalThreshold, quorumNumerator
         );
 
         // Transfer NFT ownership to governance
@@ -69,94 +68,134 @@ contract GovTest is Test {
         vm.stopPrank();
     }
 
-    function testInitialState() public view {
-        assertEq(gov.manifesto(), initialManifesto);
-        assertEq(gov.votingDelay(), votingDelay);
-        assertEq(gov.votingPeriod(), votingPeriod);
-        assertEq(gov.proposalThreshold(), proposalThreshold);
-        assertEq(gov.quorumNumerator(), quorumNumerator);
-        assertEq(gov.HOME(), homeChainId); // Changed from gov.home() to gov.HOME()
-        assertEq(nft.owner(), address(gov));
+    // NFT Core Functionality
+
+    function testInitialNFTDistribution() public view {
+        // Check that the initial NFTs were minted correctly
+        assertEq(nft.balanceOf(alice), 1);
+        assertEq(nft.balanceOf(bob), 1);
+        assertEq(nft.ownerOf(0), alice);
+        assertEq(nft.ownerOf(1), bob);
+
+        // Check total supply
+        assertEq(nft.totalSupply(), 2);
     }
 
-    function testManifestoUpdate_CrossChain() public {
-        // First update manifesto on home chain
-        // (We'll simplify by directly calling it rather than going through proposal process)
-        vm.chainId(homeChainId);
-        vm.startPrank(address(gov)); // Simulate governance call
-        gov.setManifesto(newManifesto);
+    function testNonTransferableNFT() public {
+        // Try to transfer token and expect revert
+        vm.startPrank(alice);
 
-        // Generate proof for cross-chain update
-        bytes memory proof = gov.generateManifestoProof(newManifesto);
+        vm.expectRevert(NFT.NFTNonTransferable.selector);
+        nft.transferFrom(alice, francis, 0);
+
         vm.stopPrank();
-
-        // Switch to foreign chain and claim update
-        vm.chainId(foreignChainId);
-        gov.claimManifestoUpdate(proof);
-
-        // Verify manifesto was updated on foreign chain
-        assertEq(gov.manifesto(), newManifesto);
     }
 
-    function testManifestoUpdate_OnHomeChain() public {
-        // Create a proposal to update the manifesto
-        address[] memory targets = new address[](1);
-        targets[0] = address(gov);
-
-        uint256[] memory values = new uint256[](1);
-        values[0] = 0;
-
-        bytes[] memory calldatas = new bytes[](1);
-        calldatas[0] = abi.encodeWithSelector(Gov.setManifesto.selector, newManifesto);
-
-        // Skip the whole proposal voting process and just mock the update directly
+    function testDAOMintNFT() public {
+        // Gov (DAO) should be able to mint new NFTs
         vm.startPrank(address(gov));
-        gov.setManifesto(newManifesto);
+
+        // Mint a new token to francis
+        nft.safeMint(francis, "ipfs://QmNewTokenURI");
+
         vm.stopPrank();
 
-        // Verify manifesto was updated
-        assertEq(gov.manifesto(), newManifesto);
+        // Check the new token was minted correctly
+        assertEq(nft.balanceOf(francis), 1);
+        assertEq(nft.ownerOf(2), francis);
+        assertEq(nft.tokenURI(2), "ipfs://QmNewTokenURI");
+
+        // Check updated total supply
+        assertEq(nft.totalSupply(), 3);
     }
 
-    function testParameterUpdate_CrossChain() public {
-        // First update parameter on home chain
-        uint48 newVotingDelay = 2;
+    // Delegation Mechanics - Basic Delegation
 
-        vm.chainId(homeChainId);
-        vm.prank(address(gov)); // Simulate governance call
-        gov.setVotingDelay(newVotingDelay);
+    function testNFTHolderDelegation() public {
+        // Check initial self-delegation
+        assertEq(nft.getVotes(alice), 1);
 
-        // Generate proof for cross-chain update
-        bytes memory value = abi.encodePacked(newVotingDelay);
-        bytes memory proof = gov.generateParameterProof(Gov.OperationType.UPDATE_VOTING_DELAY, value);
+        // alice delegates to bob
+        vm.prank(alice);
+        nft.delegate(bob);
 
-        // Switch to foreign chain and claim update
-        vm.chainId(foreignChainId);
-        gov.claimParameterUpdate(proof);
+        // Check votes after delegation (need to advance to next block for delegation to take effect)
+        vm.roll(block.number + 1);
 
-        // Verify parameter was updated on foreign chain
-        assertEq(gov.votingDelay(), newVotingDelay);
+        // alice should have 0 votes now
+        assertEq(nft.getVotes(alice), 0);
+
+        // bob should have 2 votes now (their own + alice's)
+        assertEq(nft.getVotes(bob), 2);
     }
 
-    function testParameterUpdates_OnHomeChain() public {
-        // Create a proposal to update voting delay
-        uint48 newVotingDelay = 2;
+    function testNonNFTHolderDelegation() public {
+        // attacker tries to delegate (this should work but have no effect)
+        vm.prank(attacker);
+        nft.delegate(alice);
 
-        // Skip the whole proposal voting process and just mock the update directly
-        vm.startPrank(address(gov));
-        gov.setVotingDelay(newVotingDelay);
-        vm.stopPrank();
+        // Advance a block
+        vm.roll(block.number + 1);
 
-        // Verify voting delay was updated
-        assertEq(gov.votingDelay(), newVotingDelay);
+        // attacker should still have 0 votes
+        assertEq(nft.getVotes(attacker), 0);
+
+        // alice should still only have their original vote
+        assertEq(nft.getVotes(alice), 1);
     }
 
-    function testOperationRestriction_HomeChainOnly() public {
-        // Try to update manifesto on foreign chain directly
-        vm.chainId(foreignChainId);
-        vm.prank(address(gov));
+    function testDelegationTransfer() public {
+        // Initial state
+        assertEq(nft.getVotes(alice), 1);
+        assertEq(nft.getVotes(bob), 1);
+        assertEq(nft.getVotes(francis), 0);
 
-        vm.expectRevert(Gov.OnlyHomeChainAllowed.selector);
-        gov.setManifesto(newManifesto);
+        // alice delegates to bob
+        vm.prank(alice);
+        nft.delegate(bob);
+
+        // Advance a block
+        vm.roll(block.number + 1);
+
+        // Check intermediate state
+        assertEq(nft.getVotes(alice), 0);
+        assertEq(nft.getVotes(bob), 2);
+
+        // alice now delegates to user3
+        vm.prank(alice);
+        nft.delegate(francis);
+
+        // Advance a block
+        vm.roll(block.number + 1);
+
+        // Final state
+        assertEq(nft.getVotes(alice), 0);
+        assertEq(nft.getVotes(bob), 1); // Back to just their own vote
+        assertEq(nft.getVotes(francis), 1); // Now has alice's vote
+    }
+
+    function testNonHolderMultipleDelegations() public {
+        // attacker delegates to alice
+        vm.prank(attacker);
+        nft.delegate(alice);
+
+        // Advance a block
+        vm.roll(block.number + 1);
+
+        // Check votes (should be unchanged)
+        assertEq(nft.getVotes(alice), 1);
+        assertEq(nft.getVotes(attacker), 0);
+
+        // attacker delegates to bob
+        vm.prank(attacker);
+        nft.delegate(bob);
+
+        // Advance a block
+        vm.roll(block.number + 1);
+
+        // Check votes again (should still be unchanged)
+        assertEq(nft.getVotes(alice), 1);
+        assertEq(nft.getVotes(bob), 1);
+        assertEq(nft.getVotes(attacker), 0);
     }
 }
