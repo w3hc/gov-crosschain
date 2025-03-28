@@ -8,6 +8,18 @@ Cross-chain Gov enables DAOs to manage operations across multiple blockchains wh
 parameters, membership, and decisions. The system uses a home chain as the source of truth, with cross-chain proofs to
 synchronize state changes to foreign chains.
 
+## Motivation
+
+Provide a coordination tool that fits the needs of regular users.
+
+- [Gov contracts (Hardhat)](https://github.com/w3hc/gov)
+- [Documentation](https://w3hc.github.io/gov-docs/)
+- [Gov UI](https://gov-ui.netlify.app/)
+- [Gov UI repo](https://github.com/w3hc/gov-ui)
+- [Gov Deployer](https://gov-deployer.netlify.app/)
+- [Gov Deployer repo](https://github.com/w3hc/gov-deployer)
+- [Example DAO on Tally](https://www.tally.xyz/gov/web3-hackers-collective)
+
 ## Features
 
 - Synchronization of cross-chain governance parameters
@@ -110,14 +122,6 @@ The cross-chain synchronization flow:
 - Membership NFTs are non-transferable to maintain governance integrity
 - All sensitive operations require governance approval
 
-## License
-
-This project is licensed under the GNU General Public License v3.0.
-
-## Credits
-
-I want to thank [Paul Ravzan Berg](https://github.com/paulrberg) for his work on the [Foundry template](https://github.com/PaulRBerg/foundry-template) we used.
-
 ## Support
 
 Feel free to reach out to [Julien](https://github.com/julienbrg) on [Farcaster](https://warpcast.com/julien-),
@@ -125,5 +129,14 @@ Feel free to reach out to [Julien](https://github.com/julienbrg) on [Farcaster](
 [Status](https://status.app/u/iwSACggKBkp1bGllbgM=#zQ3shmh1sbvE6qrGotuyNQB22XU5jTrZ2HFC8bA56d5kTS2fy),
 [Telegram](https://t.me/julienbrg), [Twitter](https://twitter.com/julienbrg),
 [Discord](https://discordapp.com/users/julienbrg), or [LinkedIn](https://www.linkedin.com/in/julienberanger/).
+
+## Credits
+
+I want to thank [Paul Ravzan Berg](https://github.com/paulrberg) for his work on the
+[Foundry template](https://github.com/PaulRBerg/foundry-template) we used.
+
+## License
+
+This project is licensed under the GNU General Public License v3.0.
 
 <img src="https://bafkreid5xwxz4bed67bxb2wjmwsec4uhlcjviwy7pkzwoyu5oesjd3sp64.ipfs.w3s.link" alt="built-with-ethereum-w3hc" width="100"/>
