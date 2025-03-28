@@ -43,9 +43,16 @@ contract Gov is Governor, GovernorSettings, GovernorCountingSimple, GovernorVote
     event GovernanceParameterUpdated(OperationType indexed operationType, uint256 oldValue, uint256 newValue);
 
     // Custom errors
+    /// @notice Error thrown when an operation is attempted on a foreign chain that should only happen on home chain
     error OnlyHomeChainAllowed();
+
+    /// @notice Error thrown when attempting to generate proofs from a foreign chain
     error ProofsOnlyOnHomeChain();
+
+    /// @notice Error thrown when an invalid parameter proof is submitted
     error InvalidParameterProof();
+
+    /// @notice Error thrown when an invalid manifesto proof is submitted
     error InvalidManifestoProof();
 
     /**
@@ -239,6 +246,7 @@ contract Gov is Governor, GovernorSettings, GovernorCountingSimple, GovernorVote
 
     /**
      * @notice Gets the current voting delay
+     * @dev Overrides Governor and GovernorSettings to provide the correct value
      * @return Current voting delay in blocks
      */
     function votingDelay() public view override(Governor, GovernorSettings) returns (uint256) {
@@ -247,6 +255,7 @@ contract Gov is Governor, GovernorSettings, GovernorCountingSimple, GovernorVote
 
     /**
      * @notice Gets the current voting period
+     * @dev Overrides Governor and GovernorSettings to provide the correct value
      * @return Current voting period in blocks
      */
     function votingPeriod() public view override(Governor, GovernorSettings) returns (uint256) {
@@ -255,6 +264,7 @@ contract Gov is Governor, GovernorSettings, GovernorCountingSimple, GovernorVote
 
     /**
      * @notice Gets the quorum required for a specific block
+     * @dev Overrides Governor and GovernorVotesQuorumFraction to provide the correct quorum calculation
      * @param blockNumber Block number to check quorum for
      * @return Minimum number of votes required for quorum
      */
@@ -269,6 +279,7 @@ contract Gov is Governor, GovernorSettings, GovernorCountingSimple, GovernorVote
 
     /**
      * @notice Gets the current proposal threshold
+     * @dev Overrides Governor and GovernorSettings to provide the correct value
      * @return Minimum number of votes required to create a proposal
      */
     function proposalThreshold() public view override(Governor, GovernorSettings) returns (uint256) {

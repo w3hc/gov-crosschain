@@ -26,6 +26,7 @@ contract NFT is ERC721, ERC721Enumerable, ERC721URIStorage, ERC721Burnable, Owna
     /// @notice Tracks token existence on each chain
     mapping(uint256 tokenId => bool exists) public existsOnChain;
 
+    /// @notice Maps delegators to their cross-chain delegates
     mapping(address delegator => address delegate) public crosschainDelegates;
 
     /// @notice Operation types for cross-chain message verification
@@ -38,10 +39,19 @@ contract NFT is ERC721, ERC721Enumerable, ERC721URIStorage, ERC721Burnable, Owna
     }
 
     // Custom errors
+    /// @notice Error thrown when an operation is attempted on a foreign chain that should only happen on home chain
     error OnlyHomeChainAllowed();
+
+    /// @notice Error thrown when an invalid proof is submitted
     error InvalidProof();
+
+    /// @notice Error thrown when trying to mint a token that already exists
     error TokenAlreadyExists();
+
+    /// @notice Error thrown when attempting to transfer non-transferable NFTs
     error NFTNonTransferable();
+
+    /// @notice Error thrown when there's an invalid delegation state
     error InvalidDelegationState();
 
     /**
@@ -66,7 +76,19 @@ contract NFT is ERC721, ERC721Enumerable, ERC721URIStorage, ERC721Burnable, Owna
      */
     event MetadataUpdated(uint256 indexed tokenId, string newUri);
 
+    /**
+     * @notice Emitted when a delegation is updated on the home chain
+     * @param delegator The address delegating voting power
+     * @param delegate The address receiving the delegation
+     */
     event DelegationUpdated(address indexed delegator, address indexed delegate);
+
+    /**
+     * @notice Emitted when a delegation is claimed on a foreign chain
+     * @param delegator The address delegating voting power
+     * @param delegate The address receiving the delegation
+     * @param claimer The address executing the claim
+     */
     event CrosschainDelegationClaimed(address indexed delegator, address indexed delegate, address indexed claimer);
 
     /**
@@ -185,12 +207,24 @@ contract NFT is ERC721, ERC721Enumerable, ERC721URIStorage, ERC721Burnable, Owna
         return abi.encode(tokenId, uri, digest);
     }
 
+    /**
+     * @notice Updates the delegation for a token owner
+     * @dev Only callable on home chain, overrides ERC721Votes.delegate
+     * @param delegatee The address to delegate voting power to
+     */
     function delegate(address delegatee) public virtual override onlyHomeChain {
         super.delegate(delegatee);
         crosschainDelegates[msg.sender] = delegatee;
         emit DelegationUpdated(msg.sender, delegatee);
     }
 
+    /**
+     * @notice Generates proof for cross-chain delegation updates
+     * @dev Creates a signed message proving delegation authorization
+     * @param delegator The address delegating voting power
+     * @param delegatee The address receiving the delegation
+     * @return Encoded proof data containing delegation details and signature
+     */
     function generateDelegationProof(address delegator, address delegatee) external view returns (bytes memory) {
         if (block.chainid != HOME) revert OnlyHomeChainAllowed();
         if (crosschainDelegates[delegator] != delegatee) revert InvalidDelegationState();
@@ -256,6 +290,11 @@ contract NFT is ERC721, ERC721Enumerable, ERC721URIStorage, ERC721Burnable, Owna
         emit MetadataUpdated(tokenId, uri);
     }
 
+    /**
+     * @notice Claims a delegation update on a foreign chain
+     * @dev Verifies proof and updates delegation on foreign chain
+     * @param proof Proof generated on home chain
+     */
     function claimDelegation(bytes memory proof) external {
         (address delegator, address delegatee, bytes32 digest) = abi.decode(proof, (address, address, bytes32));
 
