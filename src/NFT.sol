@@ -1,13 +1,13 @@
 // SPDX-License-Identifier: GPL-3.0
-pragma solidity ^0.8.20;
+pragma solidity >=0.8.28;
 
-import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
-import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
-import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
-import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Burnable.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/utils/cryptography/EIP712.sol";
-import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Votes.sol";
+import { ERC721 } from "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import { ERC721Enumerable } from "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
+import { ERC721URIStorage } from "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
+import { ERC721Burnable } from "@openzeppelin/contracts/token/ERC721/extensions/ERC721Burnable.sol";
+import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
+import { EIP712 } from "@openzeppelin/contracts/utils/cryptography/EIP712.sol";
+import { ERC721Votes } from "@openzeppelin/contracts/token/ERC721/extensions/ERC721Votes.sol";
 
 /**
  * @title Cross-chain Membership NFT Contract
@@ -18,15 +18,15 @@ import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Votes.sol";
  */
 contract NFT is ERC721, ERC721Enumerable, ERC721URIStorage, ERC721Burnable, Ownable, EIP712, ERC721Votes {
     /// @notice The chain ID where the contract was originally deployed
-    uint256 public immutable home;
+    uint256 public immutable HOME;
 
     /// @notice Next token ID to be minted
     uint256 private _nextTokenId;
 
     /// @notice Tracks token existence on each chain
-    mapping(uint256 => bool) public existsOnChain;
+    mapping(uint256 tokenId => bool exists) public existsOnChain;
 
-    mapping(address => address) public crosschainDelegates;
+    mapping(address delegator => address delegate) public crosschainDelegates;
 
     /// @notice Operation types for cross-chain message verification
     /// @dev Used to differentiate between different types of cross-chain operations
@@ -36,6 +36,13 @@ contract NFT is ERC721, ERC721Enumerable, ERC721URIStorage, ERC721Burnable, Owna
         SET_METADATA,
         SET_DELEGATION
     }
+
+    // Custom errors
+    error OnlyHomeChainAllowed();
+    error InvalidProof();
+    error TokenAlreadyExists();
+    error NFTNonTransferable();
+    error InvalidDelegationState();
 
     /**
      * @notice Emitted when a membership is claimed on a new chain
@@ -67,7 +74,7 @@ contract NFT is ERC721, ERC721Enumerable, ERC721URIStorage, ERC721Burnable, Owna
      * @dev Used to ensure certain operations only occur on the chain where the contract was originally deployed
      */
     modifier onlyHomeChain() {
-        require(block.chainid == home, "Operation only allowed on home chain");
+        if (block.chainid != HOME) revert OnlyHomeChainAllowed();
         _;
     }
 
@@ -93,7 +100,7 @@ contract NFT is ERC721, ERC721Enumerable, ERC721URIStorage, ERC721Burnable, Owna
         Ownable(initialOwner)
         EIP712(_name, "1")
     {
-        home = _home;
+        HOME = _home;
         for (uint256 i; i < _firstMembers.length; i++) {
             _mint(_firstMembers[i], _uri);
             _delegate(_firstMembers[i], _firstMembers[i]);
@@ -141,7 +148,7 @@ contract NFT is ERC721, ERC721Enumerable, ERC721URIStorage, ERC721Burnable, Owna
      * @return Encoded proof data containing token details and signature
      */
     function generateMintProof(uint256 tokenId) external view returns (bytes memory) {
-        require(block.chainid == home, "Proofs can only be generated on home chain");
+        if (block.chainid != HOME) revert OnlyHomeChainAllowed();
         address to = ownerOf(tokenId);
         string memory uri = tokenURI(tokenId);
 
@@ -158,7 +165,7 @@ contract NFT is ERC721, ERC721Enumerable, ERC721URIStorage, ERC721Burnable, Owna
      * @return Encoded proof data containing burn details and signature
      */
     function generateBurnProof(uint256 tokenId) external view returns (bytes memory) {
-        require(block.chainid == home, "Proofs can only be generated on home chain");
+        if (block.chainid != HOME) revert OnlyHomeChainAllowed();
         bytes32 message = keccak256(abi.encodePacked(address(this), uint8(OperationType.BURN), tokenId));
         bytes32 digest = keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", message));
         return abi.encode(tokenId, digest);
@@ -172,7 +179,7 @@ contract NFT is ERC721, ERC721Enumerable, ERC721URIStorage, ERC721Burnable, Owna
      * @return Encoded proof data containing update details and signature
      */
     function generateMetadataProof(uint256 tokenId, string memory uri) external view returns (bytes memory) {
-        require(block.chainid == home, "Proofs can only be generated on home chain");
+        if (block.chainid != HOME) revert OnlyHomeChainAllowed();
         bytes32 message = keccak256(abi.encodePacked(address(this), uint8(OperationType.SET_METADATA), tokenId, uri));
         bytes32 digest = keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", message));
         return abi.encode(tokenId, uri, digest);
@@ -185,8 +192,8 @@ contract NFT is ERC721, ERC721Enumerable, ERC721URIStorage, ERC721Burnable, Owna
     }
 
     function generateDelegationProof(address delegator, address delegatee) external view returns (bytes memory) {
-        require(block.chainid == home, "Proofs can only be generated on home chain");
-        require(crosschainDelegates[delegator] == delegatee, "Invalid delegation state");
+        if (block.chainid != HOME) revert OnlyHomeChainAllowed();
+        if (crosschainDelegates[delegator] != delegatee) revert InvalidDelegationState();
 
         bytes32 message =
             keccak256(abi.encodePacked(address(this), uint8(OperationType.SET_DELEGATION), delegator, delegatee));
@@ -204,11 +211,11 @@ contract NFT is ERC721, ERC721Enumerable, ERC721URIStorage, ERC721Burnable, Owna
         (uint256 tokenId, address to, string memory uri, bytes32 digest) =
             abi.decode(proof, (uint256, address, string, bytes32));
 
-        require(!existsOnChain[tokenId], "Token already exists on this chain");
+        if (existsOnChain[tokenId]) revert TokenAlreadyExists();
 
         bytes32 message = keccak256(abi.encodePacked(address(this), uint8(OperationType.MINT), tokenId, to, uri));
         bytes32 expectedDigest = keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", message));
-        require(digest == expectedDigest, "Invalid mint proof");
+        if (digest != expectedDigest) revert InvalidProof();
         _mint(to, uri);
         emit MembershipClaimed(tokenId, to, msg.sender);
     }
@@ -223,7 +230,7 @@ contract NFT is ERC721, ERC721Enumerable, ERC721URIStorage, ERC721Burnable, Owna
 
         bytes32 message = keccak256(abi.encodePacked(address(this), uint8(OperationType.BURN), tokenId));
         bytes32 expectedDigest = keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", message));
-        require(digest == expectedDigest, "Invalid burn proof");
+        if (digest != expectedDigest) revert InvalidProof();
 
         address owner = ownerOf(tokenId);
         _update(address(0), tokenId, owner);
@@ -242,7 +249,7 @@ contract NFT is ERC721, ERC721Enumerable, ERC721URIStorage, ERC721Burnable, Owna
 
         bytes32 message = keccak256(abi.encodePacked(address(this), uint8(OperationType.SET_METADATA), tokenId, uri));
         bytes32 expectedDigest = keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", message));
-        require(digest == expectedDigest, "Invalid metadata proof");
+        if (digest != expectedDigest) revert InvalidProof();
 
         _setTokenURI(tokenId, uri);
         existsOnChain[tokenId] = true;
@@ -255,7 +262,7 @@ contract NFT is ERC721, ERC721Enumerable, ERC721URIStorage, ERC721Burnable, Owna
         bytes32 message =
             keccak256(abi.encodePacked(address(this), uint8(OperationType.SET_DELEGATION), delegator, delegatee));
         bytes32 expectedDigest = keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", message));
-        require(digest == expectedDigest, "Invalid delegation proof");
+        if (digest != expectedDigest) revert InvalidProof();
 
         _delegate(delegator, delegatee);
         crosschainDelegates[delegator] = delegatee;
@@ -315,7 +322,7 @@ contract NFT is ERC721, ERC721Enumerable, ERC721URIStorage, ERC721Burnable, Owna
         override(ERC721, ERC721Enumerable, ERC721Votes)
         returns (address)
     {
-        require(auth == address(0) || to == address(0), "NFT is not transferable");
+        if (auth != address(0) && to != address(0)) revert NFTNonTransferable();
         return super._update(to, tokenId, auth);
     }
 

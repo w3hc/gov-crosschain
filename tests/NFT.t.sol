@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity >=0.8.28;
 
-import { Test, console } from "forge-std/src/Test.sol";
+import { Test } from "forge-std/src/Test.sol";
 import { NFT } from "../src/NFT.sol";
 
 contract NFTTest is Test {

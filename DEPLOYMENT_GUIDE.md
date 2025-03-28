@@ -5,17 +5,20 @@ This guide will walk you through deploying and testing the cross-chain governanc
 ## Prerequisites
 
 Make sure you have these tools installed:
+
 - [Foundry](https://book.getfoundry.sh/getting-started/installation)
 - [Bun](https://bun.sh/)
 
 ## Setup
 
 1. First, install dependencies:
+
 ```bash
 bun install
 ```
 
 2. Build the contracts:
+
 ```bash
 forge build
 ```
@@ -23,16 +26,19 @@ forge build
 ## Running Test Chains
 
 1. Make the setup script executable:
+
 ```bash
 chmod +x setup-chains.sh
 ```
 
 2. Run the script to start three Anvil instances (Optimism, Arbitrum, Base):
+
 ```bash
 ./setup-chains.sh
 ```
 
 This will start three separate Anvil instances:
+
 - Optimism (Home Chain): http://localhost:8545 (Chain ID: 10)
 - Arbitrum: http://localhost:8546 (Chain ID: 42161)
 - Base: http://localhost:8547 (Chain ID: 8453)
@@ -42,16 +48,19 @@ This will start three separate Anvil instances:
 Now you need to deploy the contracts to all three chains:
 
 1. Deploy to Optimism (Home Chain):
+
 ```bash
 forge script script/Deploy.s.sol --rpc-url http://localhost:8545 --broadcast
 ```
 
 2. Deploy to Arbitrum:
+
 ```bash
 forge script script/Deploy.s.sol --rpc-url http://localhost:8546 --broadcast
 ```
 
 3. Deploy to Base:
+
 ```bash
 forge script script/Deploy.s.sol --rpc-url http://localhost:8547 --broadcast
 ```
@@ -65,16 +74,19 @@ After deployment, you can test cross-chain functionality:
 1. Update the contract addresses in `test-cross-chain.js`
 
 2. Install ethers.js:
+
 ```bash
 bun add ethers@5.7.2
 ```
 
 3. Run the test script:
+
 ```bash
 bun test-cross-chain.js
 ```
 
 This will:
+
 - Update the manifesto on the home chain
 - Generate a proof of the update
 - Apply the proof to the other chains

@@ -4,7 +4,9 @@ A cross-chain DAO governance framework that allows synchronization across multip
 
 ## Overview
 
-Gov-Crosschain enables DAOs to manage operations across multiple blockchains while maintaining consistent governance parameters, membership, and decisions. The system uses a home chain as the source of truth, with cross-chain proofs to synchronize state changes to foreign chains.
+Gov-Crosschain enables DAOs to manage operations across multiple blockchains while maintaining consistent governance
+parameters, membership, and decisions. The system uses a home chain as the source of truth, with cross-chain proofs to
+synchronize state changes to foreign chains.
 
 ## Features
 
@@ -149,6 +151,7 @@ The system consists of two main contracts:
 - **NFT.sol**: Manages DAO membership and voting power
 
 The cross-chain synchronization flow:
+
 1. Change occurs on home chain through governance
 2. Proof is generated for the change
 3. Proof is submitted to foreign chains
@@ -182,7 +185,11 @@ This project is licensed under the GNU General Public License v3.0.
 
 ## Support
 
-Feel free to reach out to [Julien](https://github.com/julienbrg) on [Farcaster](https://warpcast.com/julien-), [Element](https://matrix.to/#/@julienbrg:matrix.org), [Status](https://status.app/u/iwSACggKBkp1bGllbgM=#zQ3shmh1sbvE6qrGotuyNQB22XU5jTrZ2HFC8bA56d5kTS2fy), [Telegram](https://t.me/julienbrg), [Twitter](https://twitter.com/julienbrg), [Discord](https://discordapp.com/users/julienbrg), or [LinkedIn](https://www.linkedin.com/in/julienberanger/).
+Feel free to reach out to [Julien](https://github.com/julienbrg) on [Farcaster](https://warpcast.com/julien-),
+[Element](https://matrix.to/#/@julienbrg:matrix.org),
+[Status](https://status.app/u/iwSACggKBkp1bGllbgM=#zQ3shmh1sbvE6qrGotuyNQB22XU5jTrZ2HFC8bA56d5kTS2fy),
+[Telegram](https://t.me/julienbrg), [Twitter](https://twitter.com/julienbrg),
+[Discord](https://discordapp.com/users/julienbrg), or [LinkedIn](https://www.linkedin.com/in/julienberanger/).
 
 [gitpod-badge]: https://img.shields.io/badge/Gitpod-Open%20in%20Gitpod-FFB45B?logo=gitpod
 [gitpod]: https://gitpod.io/#https://github.com/w3hc/gov-crosschain

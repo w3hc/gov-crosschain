@@ -1,11 +1,12 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity >=0.8.28;
 
-import "@openzeppelin/contracts/governance/Governor.sol";
-import "@openzeppelin/contracts/governance/extensions/GovernorSettings.sol";
-import "@openzeppelin/contracts/governance/extensions/GovernorCountingSimple.sol";
-import "@openzeppelin/contracts/governance/extensions/GovernorVotes.sol";
-import "@openzeppelin/contracts/governance/extensions/GovernorVotesQuorumFraction.sol";
+import { Governor } from "@openzeppelin/contracts/governance/Governor.sol";
+import { GovernorSettings } from "@openzeppelin/contracts/governance/extensions/GovernorSettings.sol";
+import { GovernorCountingSimple } from "@openzeppelin/contracts/governance/extensions/GovernorCountingSimple.sol";
+import { GovernorVotes, IVotes } from "@openzeppelin/contracts/governance/extensions/GovernorVotes.sol";
+import { GovernorVotesQuorumFraction } from
+    "@openzeppelin/contracts/governance/extensions/GovernorVotesQuorumFraction.sol";
 
 /**
  * @title Cross-chain Governance Contract
@@ -16,7 +17,7 @@ import "@openzeppelin/contracts/governance/extensions/GovernorVotesQuorumFractio
  */
 contract Gov is Governor, GovernorSettings, GovernorCountingSimple, GovernorVotes, GovernorVotesQuorumFraction {
     /// @notice Chain ID where this contract was originally deployed
-    uint256 public immutable home;
+    uint256 public immutable HOME;
 
     /// @notice IPFS CID of the DAO's manifesto
     string public manifesto;
@@ -41,9 +42,17 @@ contract Gov is Governor, GovernorSettings, GovernorCountingSimple, GovernorVote
     /// @param newValue New value of the parameter
     event GovernanceParameterUpdated(OperationType indexed operationType, uint256 oldValue, uint256 newValue);
 
-    /// @notice Restricts functions to be called only on the home chain
+    // Custom errors
+    error OnlyHomeChainAllowed();
+    error ProofsOnlyOnHomeChain();
+    error InvalidParameterProof();
+    error InvalidManifestoProof();
+
+    /**
+     * @notice Restricts functions to be called only on the home chain
+     */
     modifier onlyHomeChain() {
-        require(block.chainid == home, "Operation only allowed on home chain");
+        if (block.chainid != HOME) revert OnlyHomeChainAllowed();
         _;
     }
 
@@ -74,7 +83,7 @@ contract Gov is Governor, GovernorSettings, GovernorCountingSimple, GovernorVote
         GovernorVotes(_token)
         GovernorVotesQuorumFraction(_quorum)
     {
-        home = _home;
+        HOME = _home;
         manifesto = _manifestoCid;
     }
 
@@ -96,7 +105,7 @@ contract Gov is Governor, GovernorSettings, GovernorCountingSimple, GovernorVote
      * @return Encoded proof data for manifesto update
      */
     function generateManifestoProof(string memory newManifesto) external view returns (bytes memory) {
-        require(block.chainid == home, "Proofs can only be generated on home chain");
+        if (block.chainid != HOME) revert ProofsOnlyOnHomeChain();
         bytes32 message = keccak256(abi.encodePacked(address(this), uint8(OperationType.SET_MANIFESTO), newManifesto));
         bytes32 digest = keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", message));
         return abi.encode(newManifesto, digest);
@@ -112,7 +121,7 @@ contract Gov is Governor, GovernorSettings, GovernorCountingSimple, GovernorVote
 
         bytes32 message = keccak256(abi.encodePacked(address(this), uint8(OperationType.SET_MANIFESTO), newManifesto));
         bytes32 expectedDigest = keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", message));
-        require(digest == expectedDigest, "Invalid manifesto proof");
+        if (digest != expectedDigest) revert InvalidManifestoProof();
 
         string memory oldManifesto = manifesto;
         manifesto = newManifesto;
@@ -184,7 +193,7 @@ contract Gov is Governor, GovernorSettings, GovernorCountingSimple, GovernorVote
         view
         returns (bytes memory)
     {
-        require(block.chainid == home, "Proofs can only be generated on home chain");
+        if (block.chainid != HOME) revert ProofsOnlyOnHomeChain();
         bytes32 message = keccak256(abi.encodePacked(address(this), uint8(operationType), value));
         bytes32 digest = keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", message));
         return abi.encode(operationType, value, digest);
@@ -201,7 +210,7 @@ contract Gov is Governor, GovernorSettings, GovernorCountingSimple, GovernorVote
 
         bytes32 message = keccak256(abi.encodePacked(address(this), uint8(operationType), value));
         bytes32 expectedDigest = keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", message));
-        require(digest == expectedDigest, "Invalid parameter update proof");
+        if (digest != expectedDigest) revert InvalidParameterProof();
 
         if (operationType == OperationType.UPDATE_VOTING_DELAY) {
             uint48 newValue = uint48(bytes6(value));
