@@ -75,7 +75,7 @@ contract GovTest is Test {
         assertEq(gov.votingPeriod(), votingPeriod);
         assertEq(gov.proposalThreshold(), proposalThreshold);
         assertEq(gov.quorumNumerator(), quorumNumerator);
-        assertEq(gov.home(), homeChainId);
+        assertEq(gov.HOME(), homeChainId); // Changed from gov.home() to gov.HOME()
         assertEq(nft.owner(), address(gov));
     }
 
@@ -156,7 +156,7 @@ contract GovTest is Test {
         vm.chainId(foreignChainId);
         vm.prank(address(gov));
 
-        vm.expectRevert("Operation only allowed on home chain");
+        vm.expectRevert(Gov.OnlyHomeChainAllowed.selector);
         gov.setManifesto(newManifesto);
     }
 }

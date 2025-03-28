@@ -78,7 +78,7 @@ contract NFTTest is Test {
         assertEq(homeNft.owner(), deployer);
 
         // Check home chain
-        assertEq(homeNft.home(), homeChainId);
+        assertEq(homeNft.HOME(), homeChainId); // Changed from homeNft.home() to homeNft.HOME()
     }
 
     function testSafeMint_OnHomeChain() public {
@@ -100,7 +100,7 @@ contract NFTTest is Test {
         vm.startPrank(user1);
 
         // Try to transfer token from user1 to user3
-        vm.expectRevert("NFT is not transferable");
+        vm.expectRevert(NFT.NFTNonTransferable.selector);
         homeNft.transferFrom(user1, user3, tokenId0);
 
         vm.stopPrank();
@@ -131,7 +131,7 @@ contract NFTTest is Test {
         vm.chainId(foreignChainId);
         vm.prank(deployer);
 
-        vm.expectRevert("Operation only allowed on home chain");
+        vm.expectRevert(NFT.OnlyHomeChainAllowed.selector);
         foreignNft.safeMint(user3, initialTokenURI);
     }
 }
