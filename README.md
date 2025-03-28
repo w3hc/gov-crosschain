@@ -1,16 +1,16 @@
-# Cross-chain Gov [![Open in Gitpod][gitpod-badge]][gitpod] [![Github Actions][gha-badge]][gha] [![Foundry][foundry-badge]][foundry] [![License: GPL-3.0][license-badge]][license]
+# Cross-chain Gov
 
-A cross-chain DAO governance framework that allows synchronization across multiple EVM networks.
+A cross-chain DAO framework that allows synchronization across multiple EVM networks.
 
 ## Overview
 
-Gov-Crosschain enables DAOs to manage operations across multiple blockchains while maintaining consistent governance
+Cross-chain Gov enables DAOs to manage operations across multiple blockchains while maintaining consistent governance
 parameters, membership, and decisions. The system uses a home chain as the source of truth, with cross-chain proofs to
 synchronize state changes to foreign chains.
 
 ## Features
 
-- Cross-chain governance parameters synchronization
+- Synchronization of cross-chain governance parameters
 - Non-transferable membership NFTs with voting capabilities
 - DAO manifesto management across chains
 - Secure proof generation and verification for cross-chain operations
@@ -83,7 +83,7 @@ The system consists of two main contracts:
 
 The cross-chain synchronization flow:
 
-1. Change occurs on home chain through governance
+1. Changes occur on the home chain through governance
 2. Proof is generated for the change
 3. Proof is submitted to foreign chains
 4. Foreign chains verify and apply the change
@@ -105,7 +105,7 @@ The cross-chain synchronization flow:
 
 ## Security Considerations
 
-- The home chain (Optimism) is the source of truth
+- The home chain (Optimism) serves as the source of truth.
 - All operations on foreign chains require cryptographic proof verification
 - Membership NFTs are non-transferable to maintain governance integrity
 - All sensitive operations require governance approval
@@ -114,6 +114,10 @@ The cross-chain synchronization flow:
 
 This project is licensed under the GNU General Public License v3.0.
 
+## Credits
+
+I want to thank [Paul Ravzan Berg](https://github.com/paulrberg) for his work on the [Foundry template](https://github.com/PaulRBerg/foundry-template) we used.
+
 ## Support
 
 Feel free to reach out to [Julien](https://github.com/julienbrg) on [Farcaster](https://warpcast.com/julien-),
@@ -121,3 +125,5 @@ Feel free to reach out to [Julien](https://github.com/julienbrg) on [Farcaster](
 [Status](https://status.app/u/iwSACggKBkp1bGllbgM=#zQ3shmh1sbvE6qrGotuyNQB22XU5jTrZ2HFC8bA56d5kTS2fy),
 [Telegram](https://t.me/julienbrg), [Twitter](https://twitter.com/julienbrg),
 [Discord](https://discordapp.com/users/julienbrg), or [LinkedIn](https://www.linkedin.com/in/julienberanger/).
+
+<img src="https://bafkreid5xwxz4bed67bxb2wjmwsec4uhlcjviwy7pkzwoyu5oesjd3sp64.ipfs.w3s.link" alt="built-with-ethereum-w3hc" width="100"/>
