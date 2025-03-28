@@ -1,214 +1,194 @@
-# Foundry Template [![Open in Gitpod][gitpod-badge]][gitpod] [![Github Actions][gha-badge]][gha] [![Foundry][foundry-badge]][foundry] [![License: MIT][license-badge]][license]
+# Crosschain Gov [![Open in Gitpod][gitpod-badge]][gitpod] [![Github Actions][gha-badge]][gha] [![Foundry][foundry-badge]][foundry] [![License: GPL-3.0][license-badge]][license]
 
-[gitpod]: https://gitpod.io/#https://github.com/w3hc/gov-crosschain
-[gitpod-badge]: https://img.shields.io/badge/Gitpod-Open%20in%20Gitpod-FFB45B?logo=gitpod
-[gha]: https://github.com/w3hc/gov-crosschain/actions
-[gha-badge]: https://github.com/w3hc/gov-crosschain/actions/workflows/ci.yml/badge.svg
-[foundry]: https://getfoundry.sh/
-[foundry-badge]: https://img.shields.io/badge/Built%20with-Foundry-FFDB1C.svg
-[license]: https://opensource.org/licenses/MIT
-[license-badge]: https://img.shields.io/badge/License-MIT-blue.svg
+A cross-chain DAO governance framework that allows synchronization across multiple EVM networks.
 
-A Foundry-based template for developing Solidity smart contracts, with sensible defaults.
+## Overview
 
-## What's Inside
-
-- [Forge](https://github.com/foundry-rs/foundry/blob/master/forge): compile, test, fuzz, format, and deploy smart
-  contracts
-- [Bun]: Foundry defaults to git submodules, but this template uses Node.js packages for managing dependencies
-- [Forge Std](https://github.com/foundry-rs/forge-std): collection of helpful contracts and utilities for testing
-- [Prettier](https://github.com/prettier/prettier): code formatter for non-Solidity files
-- [Solhint](https://github.com/protofire/solhint): linter for Solidity code
-
-## Getting Started
-
-Click the [`Use this template`](https://github.com/PaulRBerg/foundry-template/generate) button at the top of the page to
-create a new repository with this repo as the initial state.
-
-Or, if you prefer to install the template manually:
-
-```sh
-$ forge init --template PaulRBerg/foundry-template my-project
-$ cd my-project
-$ bun install # install Solhint, Prettier, and other Node.js deps
-```
-
-If this is your first time with Foundry, check out the
-[installation](https://github.com/foundry-rs/foundry#installation) instructions.
+Gov-Crosschain enables DAOs to manage operations across multiple blockchains while maintaining consistent governance parameters, membership, and decisions. The system uses a home chain as the source of truth, with cross-chain proofs to synchronize state changes to foreign chains.
 
 ## Features
 
-This template builds upon the frameworks and libraries mentioned above, so please consult their respective documentation
-for details about their specific features.
+- Cross-chain governance parameters synchronization
+- Non-transferable membership NFTs with voting capabilities
+- DAO manifesto management across chains
+- Secure proof generation and verification for cross-chain operations
 
-For example, if you're interested in exploring Foundry in more detail, you should look at the
-[Foundry Book](https://book.getfoundry.sh). In particular, you may be interested in reading the
-[Writing Tests](https://book.getfoundry.sh/forge/writing-tests.html) tutorial.
+## Getting Started
 
-### Sensible Defaults
+### Prerequisites
 
-This template comes with a set of sensible default configurations for you to use. These defaults can be found in the
-following files:
+- [Foundry](https://book.getfoundry.sh/getting-started/installation)
+- [Bun](https://bun.sh/)
 
-```text
-├── .editorconfig
-├── .gitignore
-├── .prettierignore
-├── .prettierrc.yml
-├── .solhint.json
-├── foundry.toml
-└── remappings.txt
+### Installation
+
+```bash
+# Clone the repository
+git clone https://github.com/w3hc/gov-crosschain.git
+cd gov-crosschain
+
+# Install dependencies
+bun install
+
+# Build the project
+forge build
 ```
 
-### VSCode Integration
+## Testing
 
-This template is IDE agnostic, but for the best user experience, you may want to use it in VSCode alongside Nomic
-Foundation's [Solidity extension](https://marketplace.visualstudio.com/items?itemName=NomicFoundation.hardhat-solidity).
+### Basic Testing
 
-For guidance on how to integrate a Foundry project in VSCode, please refer to this
-[guide](https://book.getfoundry.sh/config/vscode).
+Run the basic test suite:
 
-### GitHub Actions
+```bash
+forge test
+```
 
-This template comes with GitHub Actions pre-configured. Your contracts will be linted and tested on every push and pull
-request made to the `main` branch.
+### Cross-Chain Testing
 
-You can edit the CI script in [.github/workflows/ci.yml](./.github/workflows/ci.yml).
+To test cross-chain functionality, you'll need to run multiple Anvil instances:
 
-## Installing Dependencies
+```bash
+# Use the helper script to start all chains at once
+chmod +x setup-chains.sh
+./setup-chains.sh
 
-Foundry typically uses git submodules to manage dependencies, but this template uses Node.js packages because
-[submodules don't scale](https://twitter.com/PaulRBerg/status/1736695487057531328).
+# Or start them manually in separate terminals
+# Terminal 1 - Optimism (Home Chain)
+anvil --chain-id 10 --port 8545 --block-time 2
 
-This is how to install dependencies:
+# Terminal 2 - Arbitrum
+anvil --chain-id 42161 --port 8546 --block-time 2
 
-1. Install the dependency using your preferred package manager, e.g. `bun install dependency-name`
-   - Use this syntax to install from GitHub: `bun install github:username/repo-name`
-2. Add a remapping for the dependency in [remappings.txt](./remappings.txt), e.g.
-   `dependency-name=node_modules/dependency-name`
+# Terminal 3 - Base
+anvil --chain-id 8453 --port 8547 --block-time 2
+```
 
-Note that OpenZeppelin Contracts is pre-installed, so you can follow that as an example.
+Deploy to all chains:
 
-## Writing Tests
+```bash
+# Deploy to Optimism (Home Chain)
+forge script script/Deploy.s.sol --rpc-url http://localhost:8545 --broadcast
 
-To write a new test contract, you start by importing `Test` from `forge-std`, and then you inherit it in your test
-contract. Forge Std comes with a pre-instantiated [cheatcodes](https://book.getfoundry.sh/cheatcodes/) environment
-accessible via the `vm` property. If you would like to view the logs in the terminal output, you can add the `-vvv` flag
-and use [console.log](https://book.getfoundry.sh/faq?highlight=console.log#how-do-i-use-consolelog).
+# Deploy to Arbitrum
+forge script script/Deploy.s.sol --rpc-url http://localhost:8546 --broadcast
 
-This template comes with an example test contract [Foo.t.sol](./tests/Foo.t.sol)
+# Deploy to Base
+forge script script/Deploy.s.sol --rpc-url http://localhost:8547 --broadcast
+```
+
+After deployment, you can run the cross-chain tests:
+
+```bash
+# Install ethers.js if not already installed
+bun add ethers@5.7.2
+
+# Update the contract addresses in test-cross-chain.js
+# Then run the tests
+bun test-cross-chain.js
+```
+
+### Troubleshooting Deployment
+
+If you encounter errors during deployment:
+
+```bash
+# Clean up build artifacts and try again
+rm -rf cache out
+forge build
+
+# Check for proper ownership transfer
+# The deployer must be the owner of contracts to transfer ownership
+```
+
+## Understanding Cross-Chain Flow
+
+The cross-chain synchronization works as follows:
+
+1. Changes are made on the home chain (Optimism) through governance
+2. Cryptographic proofs are generated for these changes
+3. Proofs are submitted to foreign chains (Arbitrum, Base)
+4. Foreign chains verify and apply these changes
+5. State remains consistent across all chains
+
+## Deployment
+
+Update your `.env` file with your configuration:
+
+```bash
+cp .env.example .env
+# Edit .env with your API keys and mnemonic
+```
+
+Deploy to real networks:
+
+```bash
+# Deploy to Optimism
+forge script script/Deploy.s.sol --rpc-url optimism --broadcast --verify
+
+# Deploy to Arbitrum
+forge script script/Deploy.s.sol --rpc-url arbitrum --broadcast --verify
+
+# Deploy to Base
+forge script script/Deploy.s.sol --rpc-url base --broadcast --verify
+```
 
 ## Usage
 
-This is a list of the most frequently needed commands.
+1. Deploy the NFT and Governance contracts on your home chain
+2. Deploy the same contracts on all foreign chains
+3. Use governance to make decisions on the home chain
+4. Generate proofs for cross-chain synchronization
+5. Apply the proofs on foreign chains to maintain consistency
 
-### Build
+## Architecture
 
-Build the contracts:
+The system consists of two main contracts:
 
-```sh
-$ forge build
-```
+- **Gov.sol**: Handles governance operations, voting, and parameter management
+- **NFT.sol**: Manages DAO membership and voting power
 
-### Clean
+The cross-chain synchronization flow:
+1. Change occurs on home chain through governance
+2. Proof is generated for the change
+3. Proof is submitted to foreign chains
+4. Foreign chains verify and apply the change
 
-Delete the build artifacts and cache directories:
+## Key Operations
 
-```sh
-$ forge clean
-```
+### Governance
 
-### Compile
+- Update DAO manifesto
+- Modify voting parameters
+- Add/remove members
+- Create and vote on proposals
 
-Compile the contracts:
+### Cross-Chain Management
 
-```sh
-$ forge build
-```
+- Generate proofs for parameter changes
+- Generate proofs for membership changes
+- Claim and verify proofs on foreign chains
 
-### Coverage
+## Security Considerations
 
-Get a test coverage report:
-
-```sh
-$ forge coverage
-```
-
-### Deploy
-
-Deploy to Anvil:
-
-```sh
-$ forge script script/Deploy.s.sol --broadcast --fork-url http://localhost:8545
-```
-
-For this script to work, you need to have a `MNEMONIC` environment variable set to a valid
-[BIP39 mnemonic](https://iancoleman.io/bip39/).
-
-For instructions on how to deploy to a testnet or mainnet, check out the
-[Solidity Scripting](https://book.getfoundry.sh/tutorials/solidity-scripting.html) tutorial.
-
-### Format
-
-Format the contracts:
-
-```sh
-$ forge fmt
-```
-
-### Gas Usage
-
-Get a gas report:
-
-```sh
-$ forge test --gas-report
-```
-
-### Lint
-
-Lint the contracts:
-
-```sh
-$ bun run lint
-```
-
-### Test
-
-Run the tests:
-
-```sh
-$ forge test
-```
-
-### Test Coverage
-
-Generate test coverage and output result to the terminal:
-
-```sh
-$ bun run test:coverage
-```
-
-### Test Coverage Report
-
-Generate test coverage with lcov report (you'll have to open the `./coverage/index.html` file in your browser, to do so
-simply copy paste the path):
-
-```sh
-$ bun run test:coverage:report
-```
-
-> [!NOTE]
->
-> This command requires you to have [`lcov`](https://github.com/linux-test-project/lcov) installed on your machine. On
-> macOS, you can install it with Homebrew: `brew install lcov`.
-
-## Related Efforts
-
-- [foundry-rs/forge-template](https://github.com/foundry-rs/forge-template)
-- [abigger87/femplate](https://github.com/abigger87/femplate)
-- [cleanunicorn/ethereum-smartcontract-template](https://github.com/cleanunicorn/ethereum-smartcontract-template)
-- [FrankieIsLost/forge-template](https://github.com/FrankieIsLost/forge-template)
+- The home chain (Optimism) is the source of truth
+- All operations on foreign chains require cryptographic proof verification
+- Membership NFTs are non-transferable to maintain governance integrity
+- All sensitive operations require governance approval
 
 ## License
 
-This project is licensed under MIT.
+This project is licensed under the GNU General Public License v3.0.
+
+## Support
+
+Feel free to reach out to [Julien](https://github.com/julienbrg) on [Farcaster](https://warpcast.com/julien-), [Element](https://matrix.to/#/@julienbrg:matrix.org), [Status](https://status.app/u/iwSACggKBkp1bGllbgM=#zQ3shmh1sbvE6qrGotuyNQB22XU5jTrZ2HFC8bA56d5kTS2fy), [Telegram](https://t.me/julienbrg), [Twitter](https://twitter.com/julienbrg), [Discord](https://discordapp.com/users/julienbrg), or [LinkedIn](https://www.linkedin.com/in/julienberanger/).
+
+[gitpod-badge]: https://img.shields.io/badge/Gitpod-Open%20in%20Gitpod-FFB45B?logo=gitpod
+[gitpod]: https://gitpod.io/#https://github.com/w3hc/gov-crosschain
+[gha-badge]: https://github.com/w3hc/gov-crosschain/actions/workflows/ci.yml/badge.svg
+[gha]: https://github.com/w3hc/gov-crosschain/actions
+[foundry-badge]: https://img.shields.io/badge/Built%20with-Foundry-FFDB1C.svg
+[foundry]: https://getfoundry.sh/
+[license-badge]: https://img.shields.io/badge/License-GPL%203.0-blue.svg
+[license]: https://opensource.org/licenses/GPL-3.0
