@@ -101,7 +101,7 @@ contract NFT is ERC721, ERC721Enumerable, ERC721URIStorage, ERC721Burnable, Owna
         EIP712(_name, "1")
     {
         HOME = _home;
-        for (uint256 i; i < _firstMembers.length; i++) {
+        for (uint256 i; i < _firstMembers.length; ++i) {
             _mint(_firstMembers[i], _uri);
             _delegate(_firstMembers[i], _firstMembers[i]);
         }
