@@ -43,3 +43,7 @@
   optimism = "https://optimism-rpc.publicnode.com"
   polygon = "https://polygon-bor-rpc.publicnode.com"
   sepolia = "https://ethereum-sepolia-rpc.publicnode.com"
+
+  local_optimism = "http://localhost:8545"
+  local_arbitrum = "http://localhost:8546"
+  local_base = "http://localhost:8547"

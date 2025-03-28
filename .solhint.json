@@ -4,11 +4,18 @@
     "code-complexity": ["error", 8],
     "compiler-version": ["error", ">=0.8.28"],
     "func-name-mixedcase": "off",
-    "func-visibility": ["error", { "ignoreConstructors": true }],
+    "func-visibility": [
+      "error",
+      {
+        "ignoreConstructors": true
+      }
+    ],
     "max-line-length": ["error", 120],
+    "max-states-count": ["warn", 30],
     "named-parameters-mapping": "warn",
     "no-console": "off",
     "not-rely-on-time": "off",
-    "one-contract-per-file": "off"
+    "one-contract-per-file": "off",
+    "gas-custom-errors": "off"
   }
 }
