@@ -18,11 +18,11 @@ contract DeployWithFactories is BaseScript {
         console.log("Deploying Factories to chain ID:", currentChainId);
 
         // Deploy factories
-        NFTFactory nftFactory = new NFTFactory();
         GovFactory govFactory = new GovFactory();
+        NFTFactory nftFactory = new NFTFactory(address(govFactory));
 
-        console.log("NFT Factory deployed at:", address(nftFactory));
         console.log("Gov Factory deployed at:", address(govFactory));
+        console.log("NFT Factory deployed at:", address(nftFactory));
 
         // Initial members array
         address[] memory initialMembers = new address[](2);
@@ -41,10 +41,7 @@ contract DeployWithFactories is BaseScript {
 
         // 1. Deploy NFT
         console.log("Deploying NFT...");
-        nft = nftFactory.deployNFT(
-            homeChainId, FACTORY_SALT, initialMembers, name, nftSymbol, nftURI, address(govFactory)
-        );
-
+        nft = nftFactory.deployNFT(homeChainId, FACTORY_SALT, initialMembers, name, nftSymbol, nftURI);
         console.log("NFT deployed at:", nft);
         console.log("NFT owner is now:", NFT(nft).owner());
 

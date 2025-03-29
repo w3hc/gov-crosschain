@@ -13,6 +13,20 @@ import { NFT } from "./NFT.sol";
 contract GovFactory {
     event GovDeployed(address indexed gov);
 
+    /**
+     * @notice Deploys a new governance contract with deterministic address
+     * @dev Uses CREATE2 for consistent addresses across chains
+     * @param homeChainId Chain ID of the DAO's home chain
+     * @param salt Unique salt for address derivation
+     * @param nft Address of the membership NFT contract
+     * @param manifestoCid IPFS CID of the DAO's manifesto
+     * @param name Name of the DAO
+     * @param votingDelay Blocks before voting begins
+     * @param votingPeriod Duration of voting in blocks
+     * @param proposalThreshold Minimum votes needed to propose
+     * @param quorumPercentage Minimum participation percentage
+     * @return Address of the newly deployed governance contract
+     */
     function deployGov(
         uint256 homeChainId,
         bytes32 salt,
