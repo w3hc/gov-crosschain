@@ -194,11 +194,11 @@ contract NFT is ERC721, ERC721Enumerable, ERC721URIStorage, ERC721Burnable, Owna
     }
 
     /**
-     * @notice Generates proof for cross-chain metadata updates
-     * @dev Creates a signed message proving metadata update authorization
-     * @param tokenId Token ID to update
-     * @param uri New metadata URI
-     * @return Encoded proof data containing update details and signature
+     * @notice Generates proof for cross-chain token metadata updates
+     * @dev This function creates a cryptographic proof that can be verified on foreign chains
+     * @param tokenId ID of the token whose metadata should be updated
+     * @param uri New metadata URI to set for the token
+     * @return bytes Encoded proof data containing token ID, URI, and a digital signature
      */
     function generateMetadataProof(uint256 tokenId, string memory uri) external view returns (bytes memory) {
         if (block.chainid != HOME) revert OnlyHomeChainAllowed();
