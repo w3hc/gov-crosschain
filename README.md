@@ -58,6 +58,14 @@ forge test
 
 ## Deployment
 
+### Deploy to anvil
+
+```bash
+forge script script/DeployWithFactory.s.sol --rpc-url local_optimism --broadcast
+```
+
+### Deploy to mainnets
+
 Update your `.env` file with your configuration:
 
 ```bash

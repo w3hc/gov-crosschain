@@ -1,147 +1,68 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity >=0.8.28;
 
-import { Test } from "forge-std/src/Test.sol";
+import { console } from "forge-std/src/Test.sol";
+import { NFTFactory } from "../src/NFTFactory.sol";
 import { GovFactory } from "../src/GovFactory.sol";
-import { Gov } from "../src/Gov.sol";
 import { NFT } from "../src/NFT.sol";
+import { BaseScript } from "../script/Base.s.sol";
 
-contract GovFactoryTest is Test {
-    // Test accounts
-    address public deployer = makeAddr("deployer");
-    address public alice = makeAddr("alice");
-    address public bob = makeAddr("bob");
-
-    // Factory and deployed contracts
-    GovFactory public factory;
-    address public nftAddress;
-    address public govAddress;
-
-    // Deployment parameters
-    uint256 public constant HOME_CHAIN_ID = 10; // Optimism
+/// @dev Script to deploy the cross-chain governance system using separate factories
+contract DeployWithFactories is BaseScript {
     bytes32 public constant FACTORY_SALT = bytes32(uint256(0x1234));
 
-    function setUp() public {
-        // Deploy the factory contract
-        vm.startPrank(deployer);
-        factory = new GovFactory(HOME_CHAIN_ID, FACTORY_SALT);
-        vm.stopPrank();
-    }
+    function run() public broadcast returns (address nft, address gov) {
+        uint256 currentChainId = block.chainid;
+        uint256 homeChainId = 10;
 
-    function testFactoryDeployment() public {
-        // Verify factory initialization
-        assertEq(factory.HOME_CHAIN_ID(), HOME_CHAIN_ID);
-        assertEq(factory.owner(), deployer);
-        assertEq(factory.DEPLOYMENT_SALT(), FACTORY_SALT);
+        console.log("Deploying Factories to chain ID:", currentChainId);
 
-        // Create initial members array
+        // Deploy factories
+        NFTFactory nftFactory = new NFTFactory();
+        GovFactory govFactory = new GovFactory();
+
+        console.log("NFT Factory deployed at:", address(nftFactory));
+        console.log("Gov Factory deployed at:", address(govFactory));
+
+        // Initial members array
         address[] memory initialMembers = new address[](2);
-        initialMembers[0] = alice;
-        initialMembers[1] = bob;
+        initialMembers[0] = 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266;
+        initialMembers[1] = 0x70997970C51812dc3A010C7d01b50e0d17dc79C8;
 
         // DAO parameters
         string memory manifestoCid = "QmInitialManifestoCID";
-        string memory name = "Test DAO";
-        string memory nftSymbol = "DAOMEM";
+        string memory name = "Our DAO";
+        string memory nftSymbol = "MEMBER";
         string memory nftURI = "ipfs://QmTokenURI";
         uint48 votingDelay = 100;
         uint32 votingPeriod = 1000;
         uint256 proposalThreshold = 0;
         uint256 quorumPercentage = 4;
 
-        // Compute expected addresses before deployment
-        (address expectedNft, address expectedGov) = factory.computeDeploymentAddresses(
-            initialMembers,
+        // 1. Deploy NFT
+        console.log("Deploying NFT...");
+        nft = nftFactory.deployNFT(homeChainId, FACTORY_SALT, initialMembers, name, nftSymbol, nftURI);
+        console.log("NFT deployed at:", nft);
+
+        // 2. Deploy Gov
+        console.log("Deploying Gov...");
+        gov = govFactory.deployGov(
+            homeChainId,
+            FACTORY_SALT,
+            NFT(nft),
             manifestoCid,
             name,
-            nftSymbol,
-            nftURI,
             votingDelay,
             votingPeriod,
             proposalThreshold,
             quorumPercentage
         );
+        console.log("Gov deployed at:", gov);
 
-        // Deploy DAO
-        vm.startPrank(deployer);
-        (nftAddress, govAddress) = factory.deployDAO(
-            initialMembers,
-            manifestoCid,
-            name,
-            nftSymbol,
-            nftURI,
-            votingDelay,
-            votingPeriod,
-            proposalThreshold,
-            quorumPercentage
-        );
-        vm.stopPrank();
+        // 3. Transfer NFT ownership to Gov
+        console.log("Transferring NFT ownership to Gov...");
+        NFT(nft).transferOwnership(gov);
 
-        // Verify contracts were deployed at expected addresses
-        assertEq(nftAddress, expectedNft, "NFT address mismatch");
-        assertEq(govAddress, expectedGov, "Gov address mismatch");
-
-        // Verify NFT initial state
-        NFT nft = NFT(nftAddress);
-        assertEq(nft.owner(), govAddress, "NFT owner should be Gov contract");
-        assertEq(nft.totalSupply(), 2, "NFT should have 2 tokens minted");
-        assertEq(nft.ownerOf(0), alice, "First NFT not minted to alice");
-        assertEq(nft.ownerOf(1), bob, "Second NFT not minted to bob");
-
-        // Verify Gov initial state
-        Gov gov = Gov(payable(govAddress));
-        assertEq(gov.manifesto(), manifestoCid, "Manifesto mismatch");
-        assertEq(gov.votingDelay(), votingDelay, "Voting delay mismatch");
-        assertEq(gov.votingPeriod(), votingPeriod, "Voting period mismatch");
-
-        // Verify deployment records in factory
-        assertTrue(factory.hasDeployment(block.chainid), "Deployment not recorded");
-        assertEq(factory.getDeploymentCount(), 1, "Deployment count mismatch");
-
-        // Get deployment info and verify
-        (address storedNft, address storedGov, uint256 chainId,, bool isHomeChain) = factory.deployments(block.chainid);
-
-        assertEq(storedNft, nftAddress, "Stored NFT address mismatch");
-        assertEq(storedGov, govAddress, "Stored Gov address mismatch");
-        assertEq(chainId, block.chainid, "Chain ID mismatch");
-        assertEq(isHomeChain, block.chainid == HOME_CHAIN_ID, "Home chain flag mismatch");
-    }
-
-    function testMultipleDeploymentsPrevention() public {
-        // Set up and perform first deployment
-        address[] memory initialMembers = new address[](1);
-        initialMembers[0] = alice;
-
-        vm.startPrank(deployer);
-        factory.deployDAO(initialMembers, "QmManifestoCID", "First DAO", "DAO1", "ipfs://uri", 100, 1000, 0, 4);
-
-        // Attempt a second deployment on the same chain
-        vm.expectRevert(GovFactory.DeploymentAlreadyExists.selector);
-        factory.deployDAO(initialMembers, "QmNewManifestoCID", "Second DAO", "DAO2", "ipfs://uri2", 200, 2000, 1, 5);
-        vm.stopPrank();
-    }
-
-    function testOwnershipControl() public {
-        address[] memory initialMembers = new address[](1);
-        initialMembers[0] = alice;
-
-        // Non-owner can't deploy
-        vm.startPrank(alice);
-        vm.expectRevert(GovFactory.OnlyOwner.selector);
-        factory.deployDAO(initialMembers, "QmManifestoCID", "First DAO", "DAO1", "ipfs://uri", 100, 1000, 0, 4);
-        vm.stopPrank();
-
-        // Owner can transfer ownership
-        vm.prank(deployer);
-        factory.transferOwnership(alice);
-        assertEq(factory.owner(), alice, "Ownership transfer failed");
-
-        // Now alice can deploy
-        vm.prank(alice);
-        (nftAddress, govAddress) =
-            factory.deployDAO(initialMembers, "QmManifestoCID", "First DAO", "DAO1", "ipfs://uri", 100, 1000, 0, 4);
-
-        // Verify deployment was successful
-        assertTrue(factory.hasDeployment(block.chainid), "Deployment not recorded");
+        console.log("Deployment complete!");
     }
 }

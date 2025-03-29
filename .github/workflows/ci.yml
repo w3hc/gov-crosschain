@@ -51,7 +51,7 @@ jobs:
         run: "bun install"
 
       - name: "Build the contracts"
-        run: "forge build"
+        run: "forge build --sizes"
 
       - name: "Add build summary"
         run: |
