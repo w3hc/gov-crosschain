@@ -7,7 +7,7 @@ import { GovFactory } from "../src/GovFactory.sol";
 import { NFT } from "../src/NFT.sol";
 import { BaseScript } from "./Base.s.sol";
 
-/// @dev Script to deploy the cross-chain governance system using separate factories
+/// @dev Script to deploy the cross-chain governance system using factories with proper order
 contract DeployWithFactories is BaseScript {
     bytes32 public constant FACTORY_SALT = bytes32(uint256(0x1234));
 
@@ -17,12 +17,14 @@ contract DeployWithFactories is BaseScript {
 
         console.log("Deploying Factories to chain ID:", currentChainId);
 
-        // Deploy factories
-        NFTFactory nftFactory = new NFTFactory();
+        // First deploy the GovFactory
         GovFactory govFactory = new GovFactory();
-
-        console.log("NFT Factory deployed at:", address(nftFactory));
         console.log("Gov Factory deployed at:", address(govFactory));
+
+        // Then deploy the NFTFactory with GovFactory address
+        NFTFactory nftFactory = new NFTFactory(address(govFactory));
+        console.log("NFT Factory deployed at:", address(nftFactory));
+        console.log("NFT Factory's GovFactory reference:", nftFactory.GOV_FACTORY());
 
         // Initial members array
         address[] memory initialMembers = new address[](2);
@@ -42,7 +44,9 @@ contract DeployWithFactories is BaseScript {
         // 1. Deploy NFT
         console.log("Deploying NFT...");
         nft = nftFactory.deployNFT(homeChainId, FACTORY_SALT, initialMembers, name, nftSymbol, nftURI);
+
         console.log("NFT deployed at:", nft);
+        console.log("NFT owner is now:", NFT(nft).owner());
 
         // 2. Deploy Gov
         console.log("Deploying Gov...");
@@ -59,9 +63,11 @@ contract DeployWithFactories is BaseScript {
         );
         console.log("Gov deployed at:", gov);
 
-        // 3. Transfer NFT ownership to Gov
-        console.log("Transferring NFT ownership to Gov...");
-        NFT(nft).transferOwnership(gov);
+        // 3. Verify Gov is the owner of NFT
+        console.log("Verifying NFT ownership...");
+        address nftOwner = NFT(nft).owner();
+        require(nftOwner == gov, "Gov is not the owner of NFT");
+        console.log("Verified: Gov is the owner of NFT");
 
         console.log("Deployment complete!");
     }
