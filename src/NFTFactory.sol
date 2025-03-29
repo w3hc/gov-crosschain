@@ -18,14 +18,18 @@ contract NFTFactory {
         address[] calldata initialMembers,
         string calldata name,
         string calldata nftSymbol,
-        string calldata nftURI
+        string calldata nftURI,
+        address govFactory
     )
         external
         returns (address)
     {
         bytes32 nftSalt = keccak256(abi.encodePacked(salt, "NFT"));
+
         address nftAddress =
-            address(new NFT{ salt: nftSalt }(homeChainId, msg.sender, initialMembers, nftURI, name, nftSymbol));
+            address(new NFT{ salt: nftSalt }(homeChainId, address(this), initialMembers, nftURI, name, nftSymbol));
+
+        NFT(nftAddress).transferOwnership(govFactory);
 
         emit NFTDeployed(nftAddress);
         return nftAddress;

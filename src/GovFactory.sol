@@ -34,6 +34,8 @@ contract GovFactory {
             )
         );
 
+        NFT(nft).transferOwnership(govAddress);
+
         emit GovDeployed(govAddress);
         return govAddress;
     }

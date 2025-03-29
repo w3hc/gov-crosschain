@@ -41,8 +41,12 @@ contract DeployWithFactories is BaseScript {
 
         // 1. Deploy NFT
         console.log("Deploying NFT...");
-        nft = nftFactory.deployNFT(homeChainId, FACTORY_SALT, initialMembers, name, nftSymbol, nftURI);
+        nft = nftFactory.deployNFT(
+            homeChainId, FACTORY_SALT, initialMembers, name, nftSymbol, nftURI, address(govFactory)
+        );
+
         console.log("NFT deployed at:", nft);
+        console.log("NFT owner is now:", NFT(nft).owner());
 
         // 2. Deploy Gov
         console.log("Deploying Gov...");
@@ -59,9 +63,11 @@ contract DeployWithFactories is BaseScript {
         );
         console.log("Gov deployed at:", gov);
 
-        // 3. Transfer NFT ownership to Gov
-        console.log("Transferring NFT ownership to Gov...");
-        NFT(nft).transferOwnership(gov);
+        // 3. Verify Gov is the owner of NFT
+        console.log("Verifying NFT ownership...");
+        address nftOwner = NFT(nft).owner();
+        require(nftOwner == gov, "Gov is not the owner of NFT");
+        console.log("Verified: Gov is the owner of NFT");
 
         console.log("Deployment complete!");
     }
