@@ -13,7 +13,7 @@ contract DeployWithFactories is BaseScript {
 
     function run() public broadcast returns (address nft, address gov) {
         uint256 currentChainId = block.chainid;
-        uint256 homeChainId = 10;
+        uint256 homeChainId = 901;
 
         console.log("Deploying Factories to chain ID:", currentChainId);
 
