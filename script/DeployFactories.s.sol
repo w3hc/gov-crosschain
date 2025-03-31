@@ -7,10 +7,10 @@ import { NFTFactory } from "../src/NFTFactory.sol";
 import { GovFactory } from "../src/GovFactory.sol";
 
 /**
- * @title FactoryDeployer
+ * @title DeployFactories
  * @notice Deploys the GovFactory and NFTFactory contracts using the Safe Singleton Factory
  */
-contract FactoryDeployer is Script {
+contract DeployFactories is Script {
     // Safe Singleton Factory address - same on all EVM chains
     address constant SAFE_SINGLETON_FACTORY = 0x914d7Fec6aaC8cd542e72Bca78B30650d45643d7;
 

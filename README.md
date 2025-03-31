@@ -80,7 +80,8 @@ Deploy to `base` (chain B)
 forge script script/DeployWithFactory.s.sol --rpc-url base --broadcast
 ```
 
-Call propose on `OPChainA`:
+Call propose on `op`:
+
 ```bash
 forge script script/AddMemberProposal.s.sol --rpc-url op --broadcast
 ```
