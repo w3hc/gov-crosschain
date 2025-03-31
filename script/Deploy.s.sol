@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0
-pragma solidity >=0.8.28 <0.9.0;
+pragma solidity >=0.8.28;
 
 import { console } from "forge-std/src/Test.sol";
 import { Gov } from "../src/Gov.sol";
