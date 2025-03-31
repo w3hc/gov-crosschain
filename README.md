@@ -58,7 +58,7 @@ forge test
 
 ## Deployment
 
-### Deploy to anvil
+### Deploy with Supersim
 
 Install [supersim](https://docs.optimism.io/app-developers/tutorials/supersim/getting-started/installation), then:
 
@@ -72,6 +72,21 @@ In another terminal:
 forge script script/DeployWithFactory.s.sol --rpc-url http://127.0.0.1:9545 --broadcast
 forge script script/AddMemberProposal.s.sol --rpc-url http://127.0.0.1:9545 --broadcast
 ```
+
+Then follow the instructions:
+
+- Alice votes
+- Bob votes
+- We execute the proposal
+- We verify if Francis is a DAO member on chain A
+- We generate a proof on chain A
+- We claim the proof on chain B
+- We verify if Francis is a DAO member on chain B
+
+#### Resources
+
+- Supersim official repo: https://github.com/ethereum-optimism/supersim
+- Supersim forked repo: https://github.com/julienbrg/supersim
 
 ### Deploy to mainnets
 
