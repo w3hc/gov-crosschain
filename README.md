@@ -60,8 +60,17 @@ forge test
 
 ### Deploy to anvil
 
+Install [supersim](https://docs.optimism.io/app-developers/tutorials/supersim/getting-started/installation), then:
+
 ```bash
-forge script script/DeployWithFactory.s.sol --rpc-url local_optimism --broadcast
+supersim
+```
+
+In another terminal:
+
+```bash
+forge script script/DeployWithFactory.s.sol --rpc-url http://127.0.0.1:9545 --broadcast
+forge script script/AddMemberProposal.s.sol --rpc-url http://127.0.0.1:9545 --broadcast
 ```
 
 ### Deploy to mainnets
