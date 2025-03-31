@@ -60,16 +60,28 @@ forge test
 
 ### Deploy with Supersim
 
-Install [supersim](https://docs.optimism.io/app-developers/tutorials/supersim/getting-started/installation), then:
+Install [supersim](https://docs.optimism.io/app-developers/tutorials/supersim/getting-started/installation) and:
 
 ```bash
 supersim
 ```
 
-In another terminal:
+Then in another terminal,
+
+Deploy to `OPChainA`:
 
 ```bash
 forge script script/DeployWithFactory.s.sol --rpc-url http://127.0.0.1:9545 --broadcast
+```
+
+Deploy to `OPChainB`
+
+```bash
+forge script script/DeployWithFactory.s.sol --rpc-url http://127.0.0.1:9546 --broadcast
+```
+
+Call propose on `OPChainA`:
+```bash
 forge script script/AddMemberProposal.s.sol --rpc-url http://127.0.0.1:9545 --broadcast
 ```
 
