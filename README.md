@@ -63,26 +63,26 @@ forge test
 Install [supersim](https://docs.optimism.io/app-developers/tutorials/supersim/getting-started/installation) and:
 
 ```bash
-supersim
+supersim fork --chains=op,base --interop.enabled
 ```
 
 Then in another terminal,
 
-Deploy to `OPChainA`:
+Deploy to `op` (chain A):
 
 ```bash
-forge script script/DeployWithFactory.s.sol --rpc-url http://127.0.0.1:9545 --broadcast
+forge script script/DeployWithFactory.s.sol --rpc-url op --broadcast
 ```
 
-Deploy to `OPChainB`
+Deploy to `base` (chain B)
 
 ```bash
-forge script script/DeployWithFactory.s.sol --rpc-url http://127.0.0.1:9546 --broadcast
+forge script script/DeployWithFactory.s.sol --rpc-url base --broadcast
 ```
 
 Call propose on `OPChainA`:
 ```bash
-forge script script/AddMemberProposal.s.sol --rpc-url http://127.0.0.1:9545 --broadcast
+forge script script/AddMemberProposal.s.sol --rpc-url op --broadcast
 ```
 
 Then follow the instructions:

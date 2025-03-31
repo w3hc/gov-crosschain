@@ -36,7 +36,6 @@
 [rpc_endpoints]
   arbitrum = "https://arbitrum-one-rpc.publicnode.com"
   avalanche = "https://avalanche-c-chain-rpc.publicnode.com"
-  base = "https://mainnet.base.org"
   bnb_smart_chain = "https://bsc-dataseed.binance.org"
   gnosis_chain = "https://rpc.gnosischain.com"
   localhost = "http://localhost:8545"
@@ -45,6 +44,5 @@
   polygon = "https://polygon-bor-rpc.publicnode.com"
   sepolia = "https://ethereum-sepolia-rpc.publicnode.com"
 
-  local_optimism = "http://localhost:8545"
-  local_arbitrum = "http://localhost:8546"
-  local_base = "http://localhost:8547"
+  op = "http://127.0.0.1:9545"
+  base = "http://127.0.0.1:9546"
