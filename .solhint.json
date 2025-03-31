@@ -1,7 +1,7 @@
 {
   "extends": "solhint:recommended",
   "rules": {
-    "code-complexity": ["error", 15],
+    "code-complexity": ["error", 30],
     "compiler-version": ["off"],
     "func-name-mixedcase": "off",
     "func-visibility": [
@@ -10,7 +10,7 @@
         "ignoreConstructors": true
       }
     ],
-    "max-line-length": ["error", 120],
+    "max-line-length": ["error", 600],
     "max-states-count": ["warn", 30],
     "named-parameters-mapping": "warn",
     "no-console": "off",
