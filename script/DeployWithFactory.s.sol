@@ -36,8 +36,8 @@ contract DeployWithFactories is BaseScript {
         string memory name = "Our DAO";
         string memory nftSymbol = "MEMBER";
         string memory nftURI = "ipfs://QmTokenURI";
-        uint48 votingDelay = 100;
-        uint32 votingPeriod = 1000;
+        uint48 votingDelay = 0;
+        uint32 votingPeriod = 30;
         uint256 proposalThreshold = 0;
         uint256 quorumPercentage = 4;
 
