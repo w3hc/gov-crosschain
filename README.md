@@ -81,6 +81,9 @@ Deploy the factories to `base` (chain B):
 forge script script/DeployFactories.s.sol --rpc-url base --broadcast
 ```
 
+> [!NOTE] We deploy from a static wallet private key, but please note **anyone can deploy the factories to any
+> compatible network**.
+
 Now deploy a DAO to `op` through the factory contracts with OP as home chain:
 
 ```bash
@@ -123,17 +126,19 @@ cp .env.example .env
 # Edit .env with your API keys and mnemonic
 ```
 
-Deploy:
+Deploy the factories:
 
 ```bash
-# Deploy to Optimism
-forge script script/Deploy.s.sol --rpc-url optimism --broadcast --verify
+forge script script/Deploy.s.sol --rpc-url op_mainnet --broadcast --verify
+```
 
-# Deploy to Arbitrum
-forge script script/Deploy.s.sol --rpc-url arbitrum --broadcast --verify
+Then anyone can deploy the factories at the same contract addresses to any other EVM network that's supporting the
+[Safe Singleton Deployer](https://github.com/safe-global/safe-singleton-factory).
 
-# Deploy to Base
-forge script script/Deploy.s.sol --rpc-url base --broadcast --verify
+Deploy your DAO:
+
+```bash
+forge script script/Deploy.s.sol --rpc-url base_mainnet --broadcast --verify
 ```
 
 ## Usage

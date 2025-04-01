@@ -35,6 +35,8 @@
   wrap_comments = true
 
 [rpc_endpoints]
+  op_mainnet = "https://optimism-rpc.publicnode.com"
+  base_mainnet = "https://mainnet.base.org"
   arbitrum = "https://arbitrum-one-rpc.publicnode.com"
   avalanche = "https://avalanche-c-chain-rpc.publicnode.com"
   bnb_smart_chain = "https://bsc-dataseed.binance.org"
