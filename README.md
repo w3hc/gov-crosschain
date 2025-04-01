@@ -122,11 +122,6 @@ Then follow the instructions:
 - We claim the proof on chain B
 - We verify if Francis is a DAO member on chain B
 
-#### Resources
-
-- Supersim official repo: https://github.com/ethereum-optimism/supersim
-- Supersim forked repo: https://github.com/julienbrg/supersim
-
 ### Deploy to mainnets
 
 Update your `.env` file with your configuration:
