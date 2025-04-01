@@ -91,8 +91,8 @@ Deploy the factories to `base` (chain B):
 forge script script/DeployFactories.s.sol --rpc-url base --broadcast
 ```
 
-> [!NOTE] We deploy from a static wallet private key, but please note **anyone can deploy the factories to any
-> compatible network**.
+**Note:** We deploy from a static wallet private key, but please note **anyone can deploy the factories to any
+compatible network**.
 
 Now deploy a DAO to `op` through the factory contracts with OP as home chain:
 
