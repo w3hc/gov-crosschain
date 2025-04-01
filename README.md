@@ -68,7 +68,8 @@ supersim fork --chains=op,base --interop.enabled
 
 Then in another terminal,
 
-Deploy the factories to `op` (chain A) through [Safe Singleton Deployer](https://github.com/safe-global/safe-singleton-factory):
+Deploy the factories to `op` (chain A) through
+[Safe Singleton Deployer](https://github.com/safe-global/safe-singleton-factory):
 
 ```bash
 forge script script/DeployFactories.s.sol --rpc-url op --broadcast
