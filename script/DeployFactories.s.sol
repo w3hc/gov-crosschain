@@ -17,6 +17,9 @@ contract DeployFactories is Script {
     // Salt for CREATE2 deployment
     bytes32 constant SALT = bytes32(uint256(0x1234));
 
+    // Use Anvil's default private key for Alice
+    uint256 private constant ALICE_KEY = 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80;
+
     function run() public returns (address govFactoryAddress, address nftFactoryAddress) {
         uint256 chainId = block.chainid;
         console2.log("Deploying factories on chain ID:", chainId);
@@ -30,7 +33,8 @@ contract DeployFactories is Script {
         address expectedGovFactory = calculateCreate2Address(SALT, keccak256(govFactoryCreationCode));
         console2.log("Expected GovFactory address:", expectedGovFactory);
 
-        vm.startBroadcast();
+        // Use the hardcoded private key instead of the default broadcaster
+        vm.startBroadcast(ALICE_KEY);
 
         // Step 1: Deploy GovFactory using Safe Singleton Factory
         (bool govSuccess, bytes memory govReturnData) =

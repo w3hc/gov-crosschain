@@ -68,16 +68,28 @@ supersim fork --chains=op,base --interop.enabled
 
 Then in another terminal,
 
-Deploy to `op` (chain A):
+Deploy the factories to `op` (chain A) through [Safe Singleton Deployer](https://github.com/safe-global/safe-singleton-factory):
 
 ```bash
-forge script script/DeployWithFactory.s.sol --rpc-url op --broadcast
+forge script script/DeployFactories.s.sol --rpc-url op --broadcast
 ```
 
-Deploy to `base` (chain B)
+Deploy the factories to `base` (chain B):
 
 ```bash
-forge script script/DeployWithFactory.s.sol --rpc-url base --broadcast
+forge script script/DeployFactories.s.sol --rpc-url base --broadcast
+```
+
+Now deploy a DAO to `op` through the factory contracts with OP as home chain:
+
+```bash
+forge script script/DeployDAO.s.sol --rpc-url op --broadcast
+```
+
+And deploy the DAO to `base`:
+
+```bash
+forge script script/DeployDAO.s.sol --rpc-url base --broadcast
 ```
 
 Call propose on `op`:

@@ -25,6 +25,9 @@ contract DeployDAO is Script {
     // Home chain ID for the DAO
     uint256 public constant HOME_CHAIN_ID = 10;
 
+    // Use Anvil's default private key for Alice
+    uint256 private constant ALICE_KEY = 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80;
+
     function run() public returns (address nftAddress, address govAddress) {
         uint256 currentChainId = block.chainid;
 
@@ -58,8 +61,8 @@ contract DeployDAO is Script {
             abi.encode(HOME_CHAIN_ID, GOV_FACTORY_ADDRESS, initialMembers, nftURI, name, nftSymbol)
         );
 
-        // Start broadcasting transactions
-        vm.startBroadcast();
+        // Start broadcasting transactions with the hardcoded private key
+        vm.startBroadcast(ALICE_KEY);
 
         // Deploy NFT with deterministic address
         console2.log("Deploying NFT...");
