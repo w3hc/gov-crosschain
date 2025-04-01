@@ -35,6 +35,7 @@ Provide a coordination tool that fits the needs of regular users.
 
 - [Foundry](https://book.getfoundry.sh/getting-started/installation)
 - [Bun](https://bun.sh/)
+- [supersim](https://docs.optimism.io/app-developers/tutorials/supersim/getting-started/installation)
 
 ### Installation
 
@@ -69,7 +70,7 @@ In this [demo](https://asciinema.org/a/710940), we:
 
 ### Deploy with Supersim
 
-Install [supersim](https://docs.optimism.io/app-developers/tutorials/supersim/getting-started/installation) and:
+Launch local OP and Base:
 
 ```bash
 supersim fork --chains=op,base --interop.enabled
