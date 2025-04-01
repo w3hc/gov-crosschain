@@ -8,6 +8,8 @@ Cross-chain Gov enables DAOs to manage operations across multiple blockchains wh
 parameters, membership, and decisions. The system uses a home chain as the source of truth, with cross-chain proofs to
 synchronize state changes to foreign chains.
 
+Watch the [Asciinema video](https://asciinema.org/a/710940).
+
 ## Motivation
 
 Provide a coordination tool that fits the needs of regular users.
@@ -33,6 +35,7 @@ Provide a coordination tool that fits the needs of regular users.
 
 - [Foundry](https://book.getfoundry.sh/getting-started/installation)
 - [Bun](https://bun.sh/)
+- [supersim](https://docs.optimism.io/app-developers/tutorials/supersim/getting-started/installation)
 
 ### Installation
 
@@ -58,11 +61,66 @@ forge test
 
 ## Deployment
 
-### Deploy to anvil
+In this [demo](https://asciinema.org/a/710940), we:
+
+- Deploy the factories to local OP and base
+- Deploy a DAO to local OP and base
+- Add a new member on home chain (OP)
+- Sync membership on Base
+
+### Deploy with Supersim
+
+Launch local OP and Base:
 
 ```bash
-forge script script/DeployWithFactory.s.sol --rpc-url local_optimism --broadcast
+supersim fork --chains=op,base --interop.enabled
 ```
+
+Then in another terminal,
+
+Deploy the factories to `op` (chain A) through
+[Safe Singleton Deployer](https://github.com/safe-global/safe-singleton-factory):
+
+```bash
+forge script script/DeployFactories.s.sol --rpc-url op --broadcast
+```
+
+Deploy the factories to `base` (chain B):
+
+```bash
+forge script script/DeployFactories.s.sol --rpc-url base --broadcast
+```
+
+**Note:** We deploy from a static wallet private key, but please note **anyone can deploy the factories to any
+compatible network**.
+
+Now deploy a DAO to `op` through the factory contracts with OP as home chain:
+
+```bash
+forge script script/DeployDAO.s.sol --rpc-url op --broadcast
+```
+
+And deploy the DAO to `base`:
+
+```bash
+forge script script/DeployDAO.s.sol --rpc-url base --broadcast
+```
+
+Call propose on `op`:
+
+```bash
+forge script script/AddMemberProposal.s.sol --rpc-url op --broadcast
+```
+
+Then follow the instructions:
+
+- Alice votes
+- Bob votes
+- We execute the proposal
+- We verify if Francis is a DAO member on chain A
+- We generate a proof on chain A
+- We claim the proof on chain B
+- We verify if Francis is a DAO member on chain B
 
 ### Deploy to mainnets
 
@@ -73,17 +131,19 @@ cp .env.example .env
 # Edit .env with your API keys and mnemonic
 ```
 
-Deploy:
+Deploy the factories:
 
 ```bash
-# Deploy to Optimism
-forge script script/Deploy.s.sol --rpc-url optimism --broadcast --verify
+forge script script/Deploy.s.sol --rpc-url op_mainnet --broadcast --verify
+```
 
-# Deploy to Arbitrum
-forge script script/Deploy.s.sol --rpc-url arbitrum --broadcast --verify
+Then anyone can deploy the factories at the same contract addresses to any other EVM network that's supporting the
+[Safe Singleton Deployer](https://github.com/safe-global/safe-singleton-factory).
 
-# Deploy to Base
-forge script script/Deploy.s.sol --rpc-url base --broadcast --verify
+Deploy your DAO:
+
+```bash
+forge script script/Deploy.s.sol --rpc-url base_mainnet --broadcast --verify
 ```
 
 ## Usage

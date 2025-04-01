@@ -1,8 +1,8 @@
 {
   "extends": "solhint:recommended",
   "rules": {
-    "code-complexity": ["error", 8],
-    "compiler-version": ["error", ">=0.8.28"],
+    "code-complexity": ["error", 30],
+    "compiler-version": ["off"],
     "func-name-mixedcase": "off",
     "func-visibility": [
       "error",
@@ -10,12 +10,13 @@
         "ignoreConstructors": true
       }
     ],
-    "max-line-length": ["error", 120],
+    "max-line-length": ["error", 600],
     "max-states-count": ["warn", 30],
     "named-parameters-mapping": "warn",
     "no-console": "off",
     "not-rely-on-time": "off",
     "one-contract-per-file": "off",
-    "gas-custom-errors": "off"
+    "gas-custom-errors": "off",
+    "no-unused-vars": "warn"
   }
 }

@@ -15,6 +15,7 @@
   src = "src"
   test = "tests"
   viaIR = true
+  sender = "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
 
 [profile.ci]
   fuzz = { runs = 10_000 }
@@ -34,9 +35,10 @@
   wrap_comments = true
 
 [rpc_endpoints]
+  op_mainnet = "https://optimism-rpc.publicnode.com"
+  base_mainnet = "https://mainnet.base.org"
   arbitrum = "https://arbitrum-one-rpc.publicnode.com"
   avalanche = "https://avalanche-c-chain-rpc.publicnode.com"
-  base = "https://mainnet.base.org"
   bnb_smart_chain = "https://bsc-dataseed.binance.org"
   gnosis_chain = "https://rpc.gnosischain.com"
   localhost = "http://localhost:8545"
@@ -45,6 +47,5 @@
   polygon = "https://polygon-bor-rpc.publicnode.com"
   sepolia = "https://ethereum-sepolia-rpc.publicnode.com"
 
-  local_optimism = "http://localhost:8545"
-  local_arbitrum = "http://localhost:8546"
-  local_base = "http://localhost:8547"
+  op = "http://127.0.0.1:9545"
+  base = "http://127.0.0.1:9546"
