@@ -8,6 +8,8 @@ Cross-chain Gov enables DAOs to manage operations across multiple blockchains wh
 parameters, membership, and decisions. The system uses a home chain as the source of truth, with cross-chain proofs to
 synchronize state changes to foreign chains.
 
+Watch the [Asciinema video](https://asciinema.org/a/710940).
+
 ## Motivation
 
 Provide a coordination tool that fits the needs of regular users.
@@ -57,6 +59,13 @@ forge test
 ```
 
 ## Deployment
+
+In this [demo](https://asciinema.org/a/710940), we:
+
+- Deploy the factories to local OP and base
+- Deploy a DAO to local OP and base
+- Add a new member on home chain (OP)
+- Sync membership on Base
 
 ### Deploy with Supersim
 
