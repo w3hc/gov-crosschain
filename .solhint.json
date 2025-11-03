@@ -1,8 +1,8 @@
 {
   "extends": "solhint:recommended",
   "rules": {
-    "code-complexity": ["error", 30],
-    "compiler-version": ["off"],
+    "code-complexity": ["error", 8],
+    "compiler-version": ["error", ">=0.8.24"],
     "func-name-mixedcase": "off",
     "func-visibility": [
       "error",
@@ -17,6 +17,8 @@
     "not-rely-on-time": "off",
     "one-contract-per-file": "off",
     "gas-custom-errors": "off",
-    "no-unused-vars": "warn"
+    "no-unused-vars": "warn",
+    "avoid-low-level-calls": "off",
+    "no-inline-assembly": "off"
   }
 }
