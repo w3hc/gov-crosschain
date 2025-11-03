@@ -1,12 +1,11 @@
 // SPDX-License-Identifier: GPL-3.0
-pragma solidity >=0.8.28;
+pragma solidity ^0.8.24;
 
 import { console2 } from "forge-std/src/console2.sol";
 import { Script } from "forge-std/src/Script.sol";
 import { NFTFactory } from "../src/NFTFactory.sol";
 import { GovFactory } from "../src/GovFactory.sol";
 import { NFT } from "../src/NFT.sol";
-import { Gov } from "../src/Gov.sol";
 
 /**
  * @title DeployDAO
@@ -16,8 +15,8 @@ import { Gov } from "../src/Gov.sol";
  */
 contract DeployDAO is Script {
     // Factory addresses (same on all chains after using Safe Singleton Factory)
-    address public constant GOV_FACTORY_ADDRESS = 0x1E319F2b9867f688f13Ae289f483608DA2d4b51b;
-    address public constant NFT_FACTORY_ADDRESS = 0x6363e1D1075D001857D213641bceF6605E3400dd;
+    address public constant GOV_FACTORY_ADDRESS = 0x103a8C4f1f6E42E916e87Ca1d200FfA4b51a68Bd;
+    address public constant NFT_FACTORY_ADDRESS = 0xB1781E702762C050F0d4D3d70c463f8d146c5d56;
 
     // Salt for CREATE2 deployment
     bytes32 public constant SALT = bytes32(uint256(0x5678));
@@ -38,8 +37,8 @@ contract DeployDAO is Script {
 
         // Initial members array
         address[] memory initialMembers = new address[](2);
-        initialMembers[0] = 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266; // First default anvil address
-        initialMembers[1] = 0x70997970C51812dc3A010C7d01b50e0d17dc79C8; // Second default anvil address
+        initialMembers[0] = vm.addr(ALICE_KEY); // Alice - 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266
+        initialMembers[1] = 0x70997970C51812dc3A010C7d01b50e0d17dc79C8; // Bob - Second default anvil address
 
         // DAO parameters
         string memory manifestoCid = "QmInitialManifestoCID";
@@ -54,12 +53,6 @@ contract DeployDAO is Script {
         // Get factory instances
         NFTFactory nftFactory = NFTFactory(NFT_FACTORY_ADDRESS);
         GovFactory govFactory = GovFactory(GOV_FACTORY_ADDRESS);
-
-        // Calculate expected addresses
-        bytes memory nftCreationCode = abi.encodePacked(
-            type(NFT).creationCode,
-            abi.encode(HOME_CHAIN_ID, GOV_FACTORY_ADDRESS, initialMembers, nftURI, name, nftSymbol)
-        );
 
         // Start broadcasting transactions with the hardcoded private key
         vm.startBroadcast(ALICE_KEY);

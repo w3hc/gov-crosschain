@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0
-pragma solidity >=0.8.28;
+pragma solidity ^0.8.24;
 
 import { ERC721 } from "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import { ERC721Enumerable } from "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
@@ -10,8 +10,8 @@ import { EIP712 } from "@openzeppelin/contracts/utils/cryptography/EIP712.sol";
 import { ERC721Votes } from "@openzeppelin/contracts/token/ERC721/extensions/ERC721Votes.sol";
 
 /**
- * @title Cross-chain Membership NFT Contract
- * @author Web3 Hackers Collective
+ * @title Membership NFT Contract
+ * @author W3HC
  * @notice A non-transferable NFT implementation for DAO membership with cross-chain capabilities
  * @dev Extends OpenZeppelin's NFT standards with cross-chain operation support
  * @custom:security-contact julien@strat.cc
@@ -361,7 +361,9 @@ contract NFT is ERC721, ERC721Enumerable, ERC721URIStorage, ERC721Burnable, Owna
         override(ERC721, ERC721Enumerable, ERC721Votes)
         returns (address)
     {
-        if (auth != address(0) && to != address(0)) revert NFTNonTransferable();
+        if (auth != address(0) && to != address(0)) {
+            revert NFTNonTransferable();
+        }
         return super._update(to, tokenId, auth);
     }
 

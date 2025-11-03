@@ -2,18 +2,6 @@
 
 A cross-chain DAO framework that allows synchronization across multiple EVM networks.
 
-## Overview
-
-Cross-chain Gov enables DAOs to manage operations across multiple blockchains while maintaining consistent governance
-parameters, membership, and decisions. The system uses a home chain as the source of truth, with cross-chain proofs to
-synchronize state changes to foreign chains.
-
-Watch the [Asciinema video](https://asciinema.org/a/710940).
-
-## Motivation
-
-Provide a coordination tool that fits the needs of regular users.
-
 - [Gov contracts (Hardhat)](https://github.com/w3hc/gov)
 - [Documentation](https://w3hc.github.io/gov-docs/)
 - [Gov UI](https://gov-ui.netlify.app/)
@@ -22,6 +10,16 @@ Provide a coordination tool that fits the needs of regular users.
 - [Gov Deployer repo](https://github.com/w3hc/gov-deployer)
 - [Example DAO on Tally](https://www.tally.xyz/gov/web3-hackers-collective)
 
+## Overview
+
+Cross-chain Gov enables DAOs to manage operations across multiple blockchains while maintaining consistent governance
+parameters, membership, and decisions. The system uses a home chain as the source of truth, with cross-chain proofs to
+synchronize state changes to foreign chains.
+
+## Motivation
+
+Provide a coordination tool that fits the needs of regular users.
+
 ## Features
 
 - Synchronization of cross-chain governance parameters
@@ -29,170 +27,67 @@ Provide a coordination tool that fits the needs of regular users.
 - DAO manifesto management across chains
 - Secure proof generation and verification for cross-chain operations
 
-## Getting Started
-
-### Prerequisites
-
-- [Foundry](https://book.getfoundry.sh/getting-started/installation)
-- [Bun](https://bun.sh/)
-- [supersim](https://docs.optimism.io/app-developers/tutorials/supersim/getting-started/installation)
-
-### Installation
+## Install
 
 ```bash
-# Clone the repository
-git clone https://github.com/w3hc/gov-crosschain.git
-cd gov-crosschain
+bun i
+```
 
-# Install dependencies
-bun install
+## Build
 
-# Build the project
+```bash
 forge build
 ```
 
-## Testing
-
-Run the basic test suite:
+## Test
 
 ```bash
 forge test
 ```
 
-## Deployment
+## Deploy locally
 
-In this [demo](https://asciinema.org/a/710940), we:
-
-- Deploy the factories to local OP and base
-- Deploy a DAO to local OP and base
-- Add a new member on home chain (OP)
-- Sync membership on Base
-
-### Deploy with Supersim
-
-Launch local OP and Base:
+Run the `setup-chains.sh` script:
 
 ```bash
-supersim fork --chains=op,base --interop.enabled
+chmod +x setup-chains.sh
+./setup-chains.sh
 ```
 
-Then in another terminal,
-
-Deploy the factories to `op` (chain A) through
-[Safe Singleton Deployer](https://github.com/safe-global/safe-singleton-factory):
+Then deploy the factories:
 
 ```bash
-forge script script/DeployFactories.s.sol --rpc-url op --broadcast
+forge script script/DeployFactories.s.sol --rpc-url local_optimism --broadcast
 ```
 
-Deploy the factories to `base` (chain B):
+Change the factories contract addresses in `script/DeployDAO.s.sol` and deploy your DAO:
 
 ```bash
-forge script script/DeployFactories.s.sol --rpc-url base --broadcast
+forge script script/DeployDAO.s.sol --rpc-url local_optimism --broadcast
 ```
 
-**Note:** We deploy from a static wallet private key, but please note **anyone can deploy the factories to any
-compatible network**.
-
-Now deploy a DAO to `op` through the factory contracts with OP as home chain:
+Propose:
 
 ```bash
-forge script script/DeployDAO.s.sol --rpc-url op --broadcast
+cast send <GOV_CONTRACT_ADDRESS> \
+  "propose(address[],uint256[],bytes[],string)" \
+  "[<GOV_CONTRACT_ADDRESS>]" \
+  "[0]" \
+  "[$(cast calldata "setManifesto(string)" "QmNewManifestoCID")]" \
+  "New CID" \
+  --private-key 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80 \
+  --rpc-url local_optimism
 ```
 
-And deploy the DAO to `base`:
+Get proposal ID:
 
 ```bash
-forge script script/DeployDAO.s.sol --rpc-url base --broadcast
+cast call <GOV_CONTRACT_ADDRESS> "proposalIds(uint256)" 0 --rpc-url local_optimism
 ```
-
-Call propose on `op`:
-
-```bash
-forge script script/AddMemberProposal.s.sol --rpc-url op --broadcast
-```
-
-Then follow the instructions:
-
-- Alice votes
-- Bob votes
-- We execute the proposal
-- We verify if Francis is a DAO member on chain A
-- We generate a proof on chain A
-- We claim the proof on chain B
-- We verify if Francis is a DAO member on chain B
-
-### Deploy to mainnets
-
-Update your `.env` file with your configuration:
-
-```bash
-cp .env.example .env
-# Edit .env with your API keys and mnemonic
-```
-
-Deploy the factories:
-
-```bash
-forge script script/Deploy.s.sol --rpc-url op_mainnet --broadcast --verify
-```
-
-Then anyone can deploy the factories at the same contract addresses to any other EVM network that's supporting the
-[Safe Singleton Deployer](https://github.com/safe-global/safe-singleton-factory).
-
-Deploy your DAO:
-
-```bash
-forge script script/Deploy.s.sol --rpc-url base_mainnet --broadcast --verify
-```
-
-## Usage
-
-1. Deploy the NFT and Governance contracts on your home chain
-2. Deploy the same contracts on all foreign chains
-3. Use governance to make decisions on the home chain
-4. Generate proofs for cross-chain synchronization
-5. Apply the proofs on foreign chains to maintain consistency
-
-## Architecture
-
-The system consists of two main contracts:
-
-- **Gov.sol**: Handles governance operations, voting, and parameter management
-- **NFT.sol**: Manages DAO membership and voting power
-
-The cross-chain synchronization flow:
-
-1. Changes occur on the home chain through governance
-2. Proof is generated for the change
-3. Proof is submitted to foreign chains
-4. Foreign chains verify and apply the change
-
-## Key Operations
-
-### Governance
-
-- Update DAO manifesto
-- Modify voting parameters
-- Add/remove members
-- Create and vote on proposals
-
-### Cross-Chain Management
-
-- Generate proofs for parameter changes
-- Generate proofs for membership changes
-- Claim and verify proofs on foreign chains
-
-## Security Considerations
-
-- The home chain (Optimism) serves as the source of truth.
-- All operations on foreign chains require cryptographic proof verification
-- Membership NFTs are non-transferable to maintain governance integrity
-- All sensitive operations require governance approval
 
 ## Support
 
-Feel free to reach out to [Julien](https://github.com/julienbrg) on [Farcaster](https://warpcast.com/julien-),
+You can reach out to [Julien](https://github.com/julienbrg) on [Farcaster](https://warpcast.com/julien-),
 [Element](https://matrix.to/#/@julienbrg:matrix.org),
 [Status](https://status.app/u/iwSACggKBkp1bGllbgM=#zQ3shmh1sbvE6qrGotuyNQB22XU5jTrZ2HFC8bA56d5kTS2fy),
 [Telegram](https://t.me/julienbrg), [Twitter](https://twitter.com/julienbrg),
@@ -205,6 +100,6 @@ I want to thank [Paul Razvan Berg](https://github.com/paulrberg) for his work on
 
 ## License
 
-This project is licensed under the GNU General Public License v3.0.
+GPL-3.0
 
 <img src="https://bafkreid5xwxz4bed67bxb2wjmwsec4uhlcjviwy7pkzwoyu5oesjd3sp64.ipfs.w3s.link" alt="built-with-ethereum-w3hc" width="100"/>

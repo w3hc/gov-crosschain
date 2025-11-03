@@ -1,21 +1,30 @@
 // SPDX-License-Identifier: GPL-3.0
-pragma solidity >=0.8.28;
+pragma solidity ^0.8.24;
 
 import { Governor } from "@openzeppelin/contracts/governance/Governor.sol";
 import { GovernorSettings } from "@openzeppelin/contracts/governance/extensions/GovernorSettings.sol";
 import { GovernorCountingSimple } from "@openzeppelin/contracts/governance/extensions/GovernorCountingSimple.sol";
 import { GovernorVotes, IVotes } from "@openzeppelin/contracts/governance/extensions/GovernorVotes.sol";
-import { GovernorVotesQuorumFraction } from
-    "@openzeppelin/contracts/governance/extensions/GovernorVotesQuorumFraction.sol";
+import {
+    GovernorVotesQuorumFraction
+} from "@openzeppelin/contracts/governance/extensions/GovernorVotesQuorumFraction.sol";
+import { GovProposalTracking } from "./extensions/GovProposalTracking.sol";
 
 /**
- * @title Cross-chain Governance Contract
- * @author Web3 Hackers Collective
+ * @title Gov
+ * @author W3HC
  * @notice Implementation of a DAO with cross-chain synchronization capabilities
  * @dev Extends OpenZeppelin's Governor contract with cross-chain parameter updates
  * @custom:security-contact julien@strat.cc
  */
-contract Gov is Governor, GovernorSettings, GovernorCountingSimple, GovernorVotes, GovernorVotesQuorumFraction {
+contract Gov is
+    Governor,
+    GovernorSettings,
+    GovernorCountingSimple,
+    GovernorVotes,
+    GovernorVotesQuorumFraction,
+    GovProposalTracking
+{
     /// @notice Chain ID where this contract was originally deployed
     uint256 public immutable HOME;
 
@@ -243,6 +252,28 @@ contract Gov is Governor, GovernorSettings, GovernorCountingSimple, GovernorVote
         }
     }
 
+    /**
+     * @notice Submits a new proposal
+     * @dev Overrides the propose function from multiple inherited contracts
+     * @param targets Array of target addresses for proposal calls
+     * @param values Array of values for proposal calls
+     * @param calldatas Array of calldatas for proposal calls
+     * @param description Description of the proposal
+     * @return proposalId The ID of the created proposal
+     */
+    function propose(
+        address[] memory targets,
+        uint256[] memory values,
+        bytes[] memory calldatas,
+        string memory description
+    )
+        public
+        override(Governor, GovProposalTracking)
+        returns (uint256)
+    {
+        return super.propose(targets, values, calldatas, description);
+    }
+
     // Required overrides
 
     /**
@@ -269,12 +300,7 @@ contract Gov is Governor, GovernorSettings, GovernorCountingSimple, GovernorVote
      * @param blockNumber Block number to check quorum for
      * @return Minimum number of votes required for quorum
      */
-    function quorum(uint256 blockNumber)
-        public
-        view
-        override(Governor, GovernorVotesQuorumFraction)
-        returns (uint256)
-    {
+    function quorum(uint256 blockNumber) public view override(Governor, GovernorVotesQuorumFraction) returns (uint256) {
         return super.quorum(blockNumber);
     }
 
