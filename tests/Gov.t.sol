@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0
-pragma solidity >=0.8.28;
+pragma solidity ^0.8.24;
 
 import { Test } from "forge-std/src/Test.sol";
 import { Gov } from "../src/Gov.sol";
@@ -196,5 +196,72 @@ contract GovTest is Test {
         assertEq(nft.getVotes(alice), 1);
         assertEq(nft.getVotes(bob), 1);
         assertEq(nft.getVotes(attacker), 0);
+    }
+
+    // Proposal ID Tracking Tests
+
+    function testProposalIdTracking() public {
+        // alice delegates to themselves and bob delegates to themselves
+        vm.prank(alice);
+        nft.delegate(alice);
+        vm.prank(bob);
+        nft.delegate(bob);
+
+        // Advance block to activate delegation
+        vm.roll(block.number + 1);
+
+        // Create a proposal as alice
+        proposalTargets = new address[](1);
+        proposalValues = new uint256[](1);
+        proposalCalldatas = new bytes[](1);
+        proposalTargets[0] = address(gov);
+        proposalValues[0] = 0;
+        proposalCalldatas[0] = abi.encodeWithSignature("setManifesto(string)", newManifesto);
+        proposalDescription = "Update manifesto";
+
+        vm.prank(alice);
+        uint256 proposalId1 = gov.propose(proposalTargets, proposalValues, proposalCalldatas, proposalDescription);
+
+        // Check that we can retrieve the proposal ID
+        assertEq(gov.proposalIds(0), proposalId1);
+    }
+
+    function testMultipleProposalTracking() public {
+        // Setup delegation
+        vm.prank(alice);
+        nft.delegate(alice);
+        vm.prank(bob);
+        nft.delegate(bob);
+
+        // Advance block
+        vm.roll(block.number + 1);
+
+        // Create first proposal
+        proposalTargets = new address[](1);
+        proposalValues = new uint256[](1);
+        proposalCalldatas = new bytes[](1);
+        proposalTargets[0] = address(gov);
+        proposalValues[0] = 0;
+        proposalCalldatas[0] = abi.encodeWithSignature("setManifesto(string)", "QmFirstProposal");
+
+        vm.prank(alice);
+        uint256 proposalId1 = gov.propose(proposalTargets, proposalValues, proposalCalldatas, "First proposal");
+
+        // Create second proposal
+        proposalCalldatas[0] = abi.encodeWithSignature("setManifesto(string)", "QmSecondProposal");
+
+        vm.prank(bob);
+        uint256 proposalId2 = gov.propose(proposalTargets, proposalValues, proposalCalldatas, "Second proposal");
+
+        // Create third proposal
+        proposalCalldatas[0] = abi.encodeWithSignature("setManifesto(string)", "QmThirdProposal");
+
+        vm.prank(alice);
+        uint256 proposalId3 = gov.propose(proposalTargets, proposalValues, proposalCalldatas, "Third proposal");
+
+        // Check individual proposal IDs
+        assertEq(gov.proposalIds(0), proposalId1);
+        assertEq(gov.proposalIds(1), proposalId2);
+        assertEq(gov.proposalIds(2), proposalId3);
     }
 }

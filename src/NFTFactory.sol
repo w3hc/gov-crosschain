@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: GPL-3.0
-pragma solidity >=0.8.28;
+pragma solidity ^0.8.24;
 
 import { NFT } from "./NFT.sol";
 
 /**
  * @title NFTFactory
- * @author Web3 Hackers Collective
+ * @author W3HC
  * @notice Factory for NFT deployment
  * @custom:security-contact julien@strat.cc
  */

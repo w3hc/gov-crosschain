@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: GPL-3.0
-pragma solidity >=0.8.28;
+pragma solidity ^0.8.24;
 
 import { Gov } from "./Gov.sol";
 import { NFT } from "./NFT.sol";
 
 /**
  * @title GovFactory
- * @author Web3 Hackers Collective
+ * @author W3HC
  * @notice Factory for Gov deployment
  * @custom:security-contact julien@strat.cc
  */
