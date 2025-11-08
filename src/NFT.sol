@@ -29,6 +29,12 @@ contract NFT is ERC721, ERC721Enumerable, ERC721URIStorage, ERC721Burnable, Owna
     /// @notice Maps delegators to their cross-chain delegates
     mapping(address delegator => address delegate) public crosschainDelegates;
 
+    /// @notice The current operator address authorized to mint without governance
+    address public operator;
+
+    /// @notice Duration parameter for operator actions (e.g., minting window in seconds)
+    uint256 public operatorDuration;
+
     /// @notice Operation types for cross-chain message verification
     /// @dev Used to differentiate between different types of cross-chain operations
     enum OperationType {
@@ -53,6 +59,9 @@ contract NFT is ERC721, ERC721Enumerable, ERC721URIStorage, ERC721Burnable, Owna
 
     /// @notice Error thrown when there's an invalid delegation state
     error InvalidDelegationState();
+
+    /// @notice Error thrown when a non-operator tries to call operator-only functions
+    error OnlyOperatorAllowed();
 
     /**
      * @notice Emitted when a membership is claimed on a new chain
@@ -90,6 +99,20 @@ contract NFT is ERC721, ERC721Enumerable, ERC721URIStorage, ERC721Burnable, Owna
      * @param claimer The address executing the claim
      */
     event CrosschainDelegationClaimed(address indexed delegator, address indexed delegate, address indexed claimer);
+
+    /// @notice Emitted when operator is updated by owner/governance
+    event OperatorUpdated(address indexed previousOperator, address indexed newOperator);
+
+    /// @notice Emitted when operator duration is updated by owner/governance
+    event OperatorDurationUpdated(uint256 previousDuration, uint256 newDuration);
+
+    /**
+     * @notice Restricts function to operator only
+     */
+    modifier onlyOperator() {
+        if (msg.sender != operator) revert OnlyOperatorAllowed();
+        _;
+    }
 
     /**
      * @notice Restricts operations to the home chain
@@ -138,6 +161,42 @@ contract NFT is ERC721, ERC721Enumerable, ERC721URIStorage, ERC721Burnable, Owna
      * @param uri Token metadata URI
      */
     function safeMint(address to, string memory uri) public onlyOwner onlyHomeChain {
+        _mint(to, uri);
+        _delegate(to, to);
+    }
+
+    /**
+     * @notice Sets the operator address
+     * @dev Can only be called by owner (governance) on home chain
+     * @param newOperator Address of the new operator (can be address(0) to disable)
+     */
+    function setOperator(address newOperator) public onlyOwner onlyHomeChain {
+        address previousOperator = operator;
+        operator = newOperator;
+        emit OperatorUpdated(previousOperator, newOperator);
+    }
+
+    /**
+     * @notice Sets the operator duration parameter
+     * @dev Can only be called by owner (governance) on home chain
+     * Duration can be used for various purposes (e.g., minting windows, rate limits)
+     * @param newDuration New duration value in seconds
+     */
+    function setOperatorDuration(uint256 newDuration) public onlyOwner onlyHomeChain {
+        uint256 previousDuration = operatorDuration;
+        operatorDuration = newDuration;
+        emit OperatorDurationUpdated(previousDuration, newDuration);
+    }
+
+    /**
+     * @notice Mints a new membership token as operator
+     * @dev Allows the operator to mint without a governance vote
+     * Only callable on home chain by the operator address
+     * Intended for use by off-chain relayers (e.g., Next.js API routes)
+     * @param to Recipient address
+     * @param uri Token metadata URI
+     */
+    function operatorMint(address to, string memory uri) public onlyOperator onlyHomeChain {
         _mint(to, uri);
         _delegate(to, to);
     }
@@ -373,13 +432,7 @@ contract NFT is ERC721, ERC721Enumerable, ERC721URIStorage, ERC721Burnable, Owna
      * @param account Address to increase balance for
      * @param value Amount to increase by
      */
-    function _increaseBalance(
-        address account,
-        uint128 value
-    )
-        internal
-        override(ERC721, ERC721Enumerable, ERC721Votes)
-    {
+    function _increaseBalance(address account, uint128 value) internal override(ERC721, ERC721Enumerable, ERC721Votes) {
         super._increaseBalance(account, value);
     }
 
