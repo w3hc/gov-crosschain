@@ -332,9 +332,4 @@ contract Gov is
         }
         return msg.sender;
     }
-
-    /**
-     * @notice Allows the contract to receive ETH for gas sponsorship
-     */
-    receive() external payable override { }
 }
