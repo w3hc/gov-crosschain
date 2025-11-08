@@ -6,6 +6,6 @@
     "editor.defaultFormatter": "tamasfe.even-better-toml"
   },
   "solidity.formatter": "forge",
-  "solidity.compileUsingRemoteVersion": "v0.8.28+commit.8e97852d",
+  "solidity.compileUsingRemoteVersion": "v0.8.29",
   "solidity.defaultCompiler": "remote"
 }
