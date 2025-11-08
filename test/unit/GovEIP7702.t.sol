@@ -238,7 +238,7 @@ contract GovEIP7702Test is Test {
 
         // EIP-7702 should use less gas than UserOp
         // (UserOp has additional signature verification overhead)
-        assertLt(gasUsedEIP7702, 500000, "EIP-7702 should be gas efficient");
+        assertLt(gasUsedEIP7702, 500_000, "EIP-7702 should be gas efficient");
     }
 }
 

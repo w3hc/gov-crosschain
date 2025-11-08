@@ -1,6 +1,7 @@
 # Standards & EIPs Reference
 
-This document outlines all Ethereum standards and EIPs (Ethereum Improvement Proposals) implemented in the Gov cross-chain governance system.
+This document outlines all Ethereum standards and EIPs (Ethereum Improvement Proposals) implemented in the Gov
+cross-chain governance system.
 
 ## Table of Contents
 
@@ -18,24 +19,27 @@ This document outlines all Ethereum standards and EIPs (Ethereum Improvement Pro
 
 ### EIP-4337: Account Abstraction via Entry Point
 
-**Status**: Inspired (Custom Implementation)
-**Implementation**: [src/extensions/GovSponsor.sol](../src/extensions/GovSponsor.sol)
+**Status**: Inspired (Custom Implementation) **Implementation**:
+[src/extensions/GovSponsor.sol](../src/extensions/GovSponsor.sol)
 
 While we don't use the full EIP-4337 stack (no EntryPoint contract), we implement the core concepts:
 
 **What we use:**
+
 - UserOperation structure for gasless transactions
 - Signature verification for user intent
 - Nonce management for replay protection
 - Gas abstraction (DAO pays gas instead of users)
 
 **What we changed:**
+
 - Simplified architecture without EntryPoint contract
 - Direct execution model via `executeUserOp()`
 - Contract acts as its own paymaster
 - Custom UserOp struct tailored for governance operations
 
 **Key Features:**
+
 ```solidity
 struct UserOperation {
     address sender;              // The member executing the operation
@@ -51,6 +55,7 @@ struct UserOperation {
 ```
 
 **Benefits:**
+
 - Members can participate in governance with ZERO ETH
 - DAO treasury sponsors all gas costs
 - Maintains security through signature verification
@@ -62,12 +67,13 @@ struct UserOperation {
 
 ### EIP-191: Signed Data Standard
 
-**Status**: Fully Implemented
-**Implementation**: [src/extensions/GovSponsor.sol](../src/extensions/GovSponsor.sol#L227-L229)
+**Status**: Fully Implemented **Implementation**:
+[src/extensions/GovSponsor.sol](../src/extensions/GovSponsor.sol#L227-L229)
 
 Used for signing and verifying UserOperations and cross-chain proofs.
 
 **Implementation:**
+
 ```solidity
 // Signing format (used by Foundry's vm.sign)
 bytes32 digest = keccak256(
@@ -76,6 +82,7 @@ bytes32 digest = keccak256(
 ```
 
 **Where used:**
+
 - UserOperation signature verification (GovSponsor.sol:227-229)
 - Cross-chain proof generation (Gov.sol:133, 221)
 - Secure message signing across the system
@@ -88,12 +95,12 @@ bytes32 digest = keccak256(
 
 ### Governor Standard (OpenZeppelin)
 
-**Status**: Fully Implemented
-**Implementation**: [src/Gov.sol](../src/Gov.sol)
+**Status**: Fully Implemented **Implementation**: [src/Gov.sol](../src/Gov.sol)
 
 The Gov contract extends OpenZeppelin's Governor implementation with custom extensions.
 
 **Components used:**
+
 - `Governor` - Core governance functionality
 - `GovernorSettings` - Configurable governance parameters
 - `GovernorCountingSimple` - Simple vote counting (For/Against/Abstain)
@@ -101,10 +108,12 @@ The Gov contract extends OpenZeppelin's Governor implementation with custom exte
 - `GovernorVotesQuorumFraction` - Percentage-based quorum
 
 **Custom extensions:**
+
 - `GovProposalTracking` - Track all proposal IDs
 - `GovSponsor` - Gasless transaction support
 
 **Key functions:**
+
 - `propose()` - Create governance proposals
 - `castVote()` - Vote on proposals
 - `execute()` - Execute successful proposals
@@ -117,18 +126,19 @@ The Gov contract extends OpenZeppelin's Governor implementation with custom exte
 
 ### Meta-Transactions Pattern
 
-**Status**: Custom Implementation
-**Implementation**: [src/extensions/GovSponsor.sol](../src/extensions/GovSponsor.sol)
+**Status**: Custom Implementation **Implementation**: [src/extensions/GovSponsor.sol](../src/extensions/GovSponsor.sol)
 
 Implements meta-transaction pattern for gasless governance interactions.
 
 **Architecture:**
+
 1. User signs operation offline (no gas required)
 2. Anyone (relayer) submits signed operation on-chain
 3. Contract verifies signature and executes
 4. DAO treasury pays all gas costs
 
 **Context Management:**
+
 ```solidity
 function _msgSender() internal view virtual override returns (address) {
     address userOpSender = _currentUserOpSender();
@@ -140,6 +150,7 @@ function _msgSender() internal view virtual override returns (address) {
 ```
 
 **Security features:**
+
 - Nonce-based replay protection
 - Signature verification via ECDSA
 - Membership validation (NFT holders only)
@@ -151,12 +162,13 @@ function _msgSender() internal view virtual override returns (address) {
 
 ### ERC-7201: Namespaced Storage Layout
 
-**Status**: Fully Implemented
-**Implementation**: [src/extensions/GovSponsor.sol](../src/extensions/GovSponsor.sol#L53-L79)
+**Status**: Fully Implemented **Implementation**:
+[src/extensions/GovSponsor.sol](../src/extensions/GovSponsor.sol#L53-L79)
 
 Prevents storage collisions in upgradeable contracts using namespaced storage.
 
 **Implementation:**
+
 ```solidity
 /**
  * @dev ERC-7201 storage namespace for GovSponsor
@@ -183,12 +195,14 @@ function _getGovSponsorStorage() private pure returns (GovSponsorStorage storage
 ```
 
 **Benefits:**
+
 - Prevents storage slot conflicts
 - Safe for use with inheritance
 - Future-proof for upgrades
 - Deterministic storage locations
 
 **Formula:**
+
 ```
 namespace = "govsponsor.storage"
 slot = keccak256(abi.encode(uint256(keccak256(namespace)) - 1)) & ~bytes32(uint256(0xff))
@@ -202,18 +216,19 @@ slot = keccak256(abi.encode(uint256(keccak256(namespace)) - 1)) & ~bytes32(uint2
 
 ### ERC-721: Non-Fungible Token Standard
 
-**Status**: Fully Implemented
-**Implementation**: [src/NFT.sol](../src/NFT.sol)
+**Status**: Fully Implemented **Implementation**: [src/NFT.sol](../src/NFT.sol)
 
 Membership tokens implementing ERC-721 with extensions.
 
 **Extensions used:**
+
 - `ERC721Enumerable` - Token enumeration capabilities
 - `ERC721URIStorage` - Per-token metadata URIs
 - `ERC721Burnable` - Token burning functionality
 - `ERC721Votes` - Voting power delegation
 
 **Key features:**
+
 - One-member-one-vote (non-transferable after mint)
 - Delegatable voting power
 - Cross-chain membership proofs
@@ -225,18 +240,19 @@ Membership tokens implementing ERC-721 with extensions.
 
 ### ERC-721 Votes Extension
 
-**Status**: Fully Implemented
-**Implementation**: [src/NFT.sol](../src/NFT.sol)
+**Status**: Fully Implemented **Implementation**: [src/NFT.sol](../src/NFT.sol)
 
 Extends ERC-721 with vote delegation and voting power tracking.
 
 **Key features:**
+
 - `delegate()` - Delegate voting power to another address
 - `getVotes()` - Get current voting power
 - `getPastVotes()` - Get historical voting power at specific block
 - Checkpoint system for vote weight history
 
 **Integration:**
+
 - Used by Governor contract for vote counting
 - Enables historical vote weight queries
 - Supports delegation without token transfer
@@ -247,12 +263,12 @@ Extends ERC-721 with vote delegation and voting power tracking.
 
 ### ERC-5192: Minimal Soulbound NFTs
 
-**Status**: Partially Implemented
-**Implementation**: [src/NFT.sol](../src/NFT.sol#L408-L418)
+**Status**: Partially Implemented **Implementation**: [src/NFT.sol](../src/NFT.sol#L408-L418)
 
 Membership NFTs are non-transferable (soulbound) after initial mint.
 
 **Implementation:**
+
 ```solidity
 function _update(address to, uint256 tokenId, address auth)
     internal
@@ -269,6 +285,7 @@ function _update(address to, uint256 tokenId, address auth)
 ```
 
 **Characteristics:**
+
 - Tokens cannot be transferred between addresses
 - Tokens can be minted (address(0) → user)
 - Tokens can be burned (user → address(0))
@@ -282,12 +299,12 @@ function _update(address to, uint256 tokenId, address auth)
 
 ### EIP-712: Typed Structured Data Hashing and Signing
 
-**Status**: Fully Implemented
-**Implementation**: [src/NFT.sol](../src/NFT.sol)
+**Status**: Fully Implemented **Implementation**: [src/NFT.sol](../src/NFT.sol)
 
 Used for cross-chain delegation and structured data signing.
 
 **Implementation:**
+
 ```solidity
 contract NFT is EIP712 {
     constructor() EIP712("NFT Name", "1") {
@@ -297,6 +314,7 @@ contract NFT is EIP712 {
 ```
 
 **Use cases:**
+
 - Cross-chain delegation signatures
 - Structured data signing for proofs
 - Domain separation for security
@@ -307,12 +325,13 @@ contract NFT is EIP712 {
 
 ### ECDSA Signature Recovery
 
-**Status**: Fully Implemented
-**Implementation**: [src/extensions/GovSponsor.sol](../src/extensions/GovSponsor.sol#L208-L230)
+**Status**: Fully Implemented **Implementation**:
+[src/extensions/GovSponsor.sol](../src/extensions/GovSponsor.sol#L208-L230)
 
 Custom ECDSA implementation for signature verification.
 
 **Implementation:**
+
 ```solidity
 function recoverSigner(bytes32 hash, bytes memory signature)
     internal pure returns (address)
@@ -341,6 +360,7 @@ function recoverSigner(bytes32 hash, bytes memory signature)
 ```
 
 **Security features:**
+
 - Signature malleability protection
 - Standard v,r,s format
 - Compatible with eth_sign and personal_sign
@@ -351,40 +371,45 @@ function recoverSigner(bytes32 hash, bytes memory signature)
 
 ### Standards Compliance Matrix
 
-| Standard | Status | Location | Notes |
-|----------|--------|----------|-------|
-| EIP-4337 | Inspired | GovSponsor.sol | Simplified implementation |
-| EIP-191 | Full | GovSponsor.sol, Gov.sol | Message signing |
-| ERC-7201 | Full | GovSponsor.sol | Namespaced storage |
-| ERC-721 | Full | NFT.sol | Membership tokens |
-| ERC-721Votes | Full | NFT.sol | Vote delegation |
-| ERC-5192 | Partial | NFT.sol | Soulbound behavior |
-| EIP-712 | Full | NFT.sol | Typed data signing |
-| OpenZeppelin Governor | Full | Gov.sol | Governance core |
+| Standard              | Status   | Location                | Notes                     |
+| --------------------- | -------- | ----------------------- | ------------------------- |
+| EIP-4337              | Inspired | GovSponsor.sol          | Simplified implementation |
+| EIP-191               | Full     | GovSponsor.sol, Gov.sol | Message signing           |
+| ERC-7201              | Full     | GovSponsor.sol          | Namespaced storage        |
+| ERC-721               | Full     | NFT.sol                 | Membership tokens         |
+| ERC-721Votes          | Full     | NFT.sol                 | Vote delegation           |
+| ERC-5192              | Partial  | NFT.sol                 | Soulbound behavior        |
+| EIP-712               | Full     | NFT.sol                 | Typed data signing        |
+| OpenZeppelin Governor | Full     | Gov.sol                 | Governance core           |
 
 ---
 
 ### Why These Standards?
 
 #### EIP-4337 (Account Abstraction)
-**Problem**: Users need ETH to participate in governance, creating a barrier to entry.
-**Solution**: DAO treasury sponsors gas costs, enabling zero-ETH participation.
+
+**Problem**: Users need ETH to participate in governance, creating a barrier to entry. **Solution**: DAO treasury
+sponsors gas costs, enabling zero-ETH participation.
 
 #### ERC-7201 (Namespaced Storage)
-**Problem**: Storage collisions in complex inheritance hierarchies.
-**Solution**: Isolated storage namespaces prevent conflicts and enable safe upgrades.
+
+**Problem**: Storage collisions in complex inheritance hierarchies. **Solution**: Isolated storage namespaces prevent
+conflicts and enable safe upgrades.
 
 #### ERC-721Votes (Voting NFTs)
-**Problem**: Need verifiable membership and voting power tracking.
-**Solution**: NFT-based membership with built-in vote delegation and historical tracking.
+
+**Problem**: Need verifiable membership and voting power tracking. **Solution**: NFT-based membership with built-in vote
+delegation and historical tracking.
 
 #### ERC-5192 (Soulbound)
-**Problem**: Transferable membership tokens could enable vote buying.
-**Solution**: Non-transferable tokens ensure genuine member participation.
+
+**Problem**: Transferable membership tokens could enable vote buying. **Solution**: Non-transferable tokens ensure
+genuine member participation.
 
 #### EIP-712 (Typed Data)
-**Problem**: Cross-chain operations need secure, structured signatures.
-**Solution**: Domain-separated typed data signing for cross-chain proofs.
+
+**Problem**: Cross-chain operations need secure, structured signatures. **Solution**: Domain-separated typed data
+signing for cross-chain proofs.
 
 ---
 
@@ -403,11 +428,11 @@ The contract makes strategic trade-offs for security and usability:
 
 #### EIP-7702: Set EOA Account Code
 
-**Status**: ✅ INTEGRATED & PRODUCTION READY
-**Networks**: 329+ EVM chains including Ethereum, Optimism, Base, Arbitrum, Polygon, BSC, and more
-**Implementation**: Complete with tests, documentation, and front-end components
+**Status**: ✅ INTEGRATED & PRODUCTION READY **Networks**: 329+ EVM chains including Ethereum, Optimism, Base, Arbitrum,
+Polygon, BSC, and more **Implementation**: Complete with tests, documentation, and front-end components
 
-EIP-7702 is **already deployed on all major EVM networks** and enables EOAs to temporarily execute code from another contract through authorization signatures.
+EIP-7702 is **already deployed on all major EVM networks** and enables EOAs to temporarily execute code from another
+contract through authorization signatures.
 
 **What This Means for Our Gov Contract:**
 
@@ -417,7 +442,7 @@ Users can now interact with governance **WITHOUT our custom UserOperation system
 // EIP-7702 Authorization (user signs this)
 const authorization = {
   chainId: 1,
-  address: govContractAddress,  // Temporarily delegate to Gov contract
+  address: govContractAddress, // Temporarily delegate to Gov contract
   nonce: 0n,
 };
 
@@ -432,17 +457,18 @@ await govContract.propose(targets, values, calldatas, description);
 
 **Architecture Comparison:**
 
-| Aspect | Current (Custom UserOp) | EIP-7702 (Native) |
-|--------|------------------------|-------------------|
-| **Deployment** | All EVM chains | 329+ EVM mainnets |
-| **User Experience** | Sign UserOp → Relayer submits | Sign authorization → Direct call |
-| **Code Complexity** | Custom GovSponsor contract | Native protocol support |
-| **Gas Efficiency** | Higher (verification overhead) | Lower (protocol-level) |
-| **Relayer Required** | Yes | Optional |
-| **Integration Effort** | Already done ✅ | Need to implement |
-| **Maintenance** | Custom code to maintain | Protocol-maintained |
+| Aspect                 | Current (Custom UserOp)        | EIP-7702 (Native)                |
+| ---------------------- | ------------------------------ | -------------------------------- |
+| **Deployment**         | All EVM chains                 | 329+ EVM mainnets                |
+| **User Experience**    | Sign UserOp → Relayer submits  | Sign authorization → Direct call |
+| **Code Complexity**    | Custom GovSponsor contract     | Native protocol support          |
+| **Gas Efficiency**     | Higher (verification overhead) | Lower (protocol-level)           |
+| **Relayer Required**   | Yes                            | Optional                         |
+| **Integration Effort** | Already done ✅                | Need to implement                |
+| **Maintenance**        | Custom code to maintain        | Protocol-maintained              |
 
 **Current Implementation (What We Have):**
+
 ```solidity
 // GovSponsor.sol - Custom implementation
 struct UserOperation {
@@ -461,6 +487,7 @@ function executeUserOp(UserOperation calldata userOp) external {
 ```
 
 **EIP-7702 Implementation (What We Should Add):**
+
 ```solidity
 // No custom struct needed!
 // No executeUserOp() needed!
@@ -478,46 +505,49 @@ function _msgSender() internal view override returns (address) {
 **Deployment Guide:**
 
 **For New Deployments:**
+
 1. Deploy Gov contract to any EIP-7702-enabled network
 2. Integrate EIP-7702 components in your front-end
 3. Offer all three methods: EIP-7702 (primary), UserOp (fallback), Traditional (backup)
 4. Configure DAO treasury with sufficient ETH for gas sponsorship
 
 **For Existing Deployments:**
+
 1. No contract upgrade needed - EIP-7702 works with current Gov contract
 2. Add EIP-7702 components to your existing front-end
 3. Gradually migrate users to EIP-7702 for better UX
 4. Keep UserOp and Traditional methods for backward compatibility
 
 **Recommended User Flow:**
+
 1. Try EIP-7702 first (simplest, most efficient)
 2. Fallback to UserOp if wallet doesn't support EIP-7702
 3. Fallback to Traditional if user has ETH and prefers direct payment
 
 **Why We Should Integrate NOW:**
 
-✅ **Live on 329+ mainnets** - Not experimental
-✅ **Better UX** - Simpler for developers and users
-✅ **Lower gas costs** - Protocol-level optimization
-✅ **Less code** - Remove custom UserOp complexity
-✅ **Industry standard** - Ethereum-native solution
-✅ **Forward compatible** - Future-proof architecture
+✅ **Live on 329+ mainnets** - Not experimental ✅ **Better UX** - Simpler for developers and users ✅ **Lower gas
+costs** - Protocol-level optimization ✅ **Less code** - Remove custom UserOp complexity ✅ **Industry standard** -
+Ethereum-native solution ✅ **Forward compatible** - Future-proof architecture
 
 **Implementation Status:**
 
 ✅ **Phase 1: Testing (COMPLETE)**
+
 - Created comprehensive test suite: [test/unit/GovEIP7702.t.sol](../test/unit/GovEIP7702.t.sol)
 - Tests cover delegation, propose, vote, execute workflows
 - Verified backward compatibility with traditional methods
 - Confirmed gas efficiency improvements
 
 ✅ **Phase 2: Documentation (COMPLETE)**
+
 - Updated [INTEGRATION_GUIDE.md](../docs/INTEGRATION_GUIDE.md) with EIP-7702 examples
 - Added three-method comparison: Traditional, UserOp, EIP-7702
 - Marked EIP-7702 as **Recommended** method
 - Provided Next.js component examples
 
 ✅ **Phase 3: Front-end Components (COMPLETE)**
+
 - Created `EIP7702Propose.tsx` and `EIP7702Vote.tsx` components
 - Integrated Viem's experimental EIP-7702 support
 - Implemented authorization flow with `signAuthorization()`
@@ -525,9 +555,11 @@ function _msgSender() internal view override returns (address) {
 
 **Ready for Production:**
 
-The Gov contract **already works** with EIP-7702 without any Solidity changes! Deploy to any EIP-7702-enabled network and integrate the front-end components.
+The Gov contract **already works** with EIP-7702 without any Solidity changes! Deploy to any EIP-7702-enabled network
+and integrate the front-end components.
 
 **Usage Example:**
+
 ```typescript
 // 1. Sign authorization (once)
 const authorization = await signAuthorization(walletClient, {
@@ -539,8 +571,8 @@ const hash = await walletClient.sendTransaction({
   to: govContractAddress,
   data: encodeFunctionData({
     abi: govAbi,
-    functionName: 'propose',
-    args: [targets, values, calldatas, description]
+    functionName: "propose",
+    args: [targets, values, calldatas, description],
   }),
   authorizationList: [authorization],
   // User pays ZERO gas - DAO treasury pays!
@@ -548,6 +580,7 @@ const hash = await walletClient.sendTransaction({
 ```
 
 **References:**
+
 - [EIP-7702 Specification](https://eips.ethereum.org/EIPS/eip-7702)
 - [EIP-7702 Playground](https://github.com/w3hc/eip7702-playground)
 - [Supported Networks (329+)](https://github.com/w3hc/eip7702-playground/blob/main/eip7702-networks.ts)
@@ -559,10 +592,10 @@ const hash = await walletClient.sendTransaction({
 
 #### EIP-6492: Signature Validation for Pre-deployed Contracts
 
-**Status**: Not Implemented
-**Potential Use**: Verify signatures for contracts not yet deployed
+**Status**: Not Implemented **Potential Use**: Verify signatures for contracts not yet deployed
 
 Could be useful for:
+
 - Cross-chain signature verification before deployment
 - Predicting contract addresses and pre-signing operations
 - Counterfactual contract interactions
@@ -571,12 +604,12 @@ Could be useful for:
 
 #### EIP-3074: AUTH and AUTHCALL Opcodes
 
-**Status**: Not Implemented
-**Potential Use**: Alternative account abstraction approach
+**Status**: Not Implemented **Potential Use**: Alternative account abstraction approach
 
 An alternative to EIP-7702 that introduces new opcodes for EOA delegation.
 
 **Why monitoring:**
+
 - Could simplify gasless transaction architecture
 - Would reduce need for UserOperation struct
 - Waiting for mainnet adoption
@@ -585,9 +618,11 @@ An alternative to EIP-7702 that introduces new opcodes for EOA delegation.
 
 ### Cross-Chain Standards
 
-The Gov system implements custom cross-chain synchronization that doesn't follow a specific EIP but uses proven cryptographic techniques:
+The Gov system implements custom cross-chain synchronization that doesn't follow a specific EIP but uses proven
+cryptographic techniques:
 
 **Proof Generation:**
+
 ```solidity
 bytes32 message = keccak256(abi.encodePacked(
     address(this),
@@ -601,12 +636,14 @@ bytes32 digest = keccak256(abi.encodePacked(
 ```
 
 **Proof Verification:**
+
 - Deterministic message hashing
 - EIP-191 signature format
 - Chain-specific contract addresses
 - Operation type encoding
 
 This approach ensures:
+
 - Verifiable parameter updates across chains
 - Replay attack prevention
 - Source chain authentication
@@ -642,6 +679,7 @@ The Gov cross-chain governance system leverages a carefully selected set of Ethe
 The system now supports **three methods** for governance participation:
 
 **1. EIP-7702 (Recommended)**
+
 - ✅ Live on 329+ EVM mainnets
 - ✅ Native protocol support
 - ✅ Zero ETH required
@@ -651,6 +689,7 @@ The system now supports **three methods** for governance participation:
 - See: [INTEGRATION_GUIDE.md § EIP-7702](INTEGRATION_GUIDE.md#eip-7702-method-native-account-abstraction)
 
 **2. UserOperations (Fallback)**
+
 - ✅ Works on all EVM chains
 - ✅ Zero ETH required
 - ✅ Custom implementation
@@ -658,12 +697,14 @@ The system now supports **three methods** for governance participation:
 - See: [INTEGRATION_GUIDE.md § UserOperations](INTEGRATION_GUIDE.md#gasless-method-useroperations)
 
 **3. Traditional (Backup)**
+
 - ✅ Standard transactions
 - ⚠️ Requires ETH for gas
 - ✅ Simplest for users with ETH
 - See: [INTEGRATION_GUIDE.md § Traditional](INTEGRATION_GUIDE.md#traditional-method-with-gas)
 
-Each standard serves a specific purpose in creating a secure, accessible, and decentralized governance system that works across multiple blockchain networks with maximum flexibility for users.
+Each standard serves a specific purpose in creating a secure, accessible, and decentralized governance system that works
+across multiple blockchain networks with maximum flexibility for users.
 
 ---
 

@@ -1,6 +1,7 @@
 # GovSponsor Integration Guide
 
-This guide explains how to interact with the Gov contract using both traditional transactions (requiring ETH for gas) and gasless UserOperations (requiring zero ETH).
+This guide explains how to interact with the Gov contract using both traditional transactions (requiring ETH for gas)
+and gasless UserOperations (requiring zero ETH).
 
 ## Table of Contents
 
@@ -18,11 +19,13 @@ This guide explains how to interact with the Gov contract using both traditional
 
 ## Overview
 
-The Gov contract extends OpenZeppelin's Governor with the GovSponsor extension, which provides **three ways** to interact with governance functions:
+The Gov contract extends OpenZeppelin's Governor with the GovSponsor extension, which provides **three ways** to
+interact with governance functions:
 
 - **Traditional**: Users pay their own gas (standard Ethereum transactions)
 - **Gasless (UserOperations)**: DAO treasury sponsors gas via custom UserOp system (members need ZERO ETH)
-- **EIP-7702 (Recommended)**: Native account abstraction - simplest and most efficient gasless method (ZERO ETH required)
+- **EIP-7702 (Recommended)**: Native account abstraction - simplest and most efficient gasless method (ZERO ETH
+  required)
 
 All governance functions (`propose`, `castVote`, `execute`) support all three methods.
 
@@ -39,6 +42,7 @@ All governance functions (`propose`, `castVote`, `execute`) support all three me
 ### propose()
 
 **Function Signature:**
+
 ```solidity
 function propose(
     address[] memory targets,
@@ -49,27 +53,21 @@ function propose(
 ```
 
 **Usage:**
+
 ```javascript
 // Example: Propose to set a value on a target contract
 const targets = [targetContract.address];
 const values = [0]; // No ETH sent
-const calldatas = [
-  targetContract.interface.encodeFunctionData("setValue", [42])
-];
+const calldatas = [targetContract.interface.encodeFunctionData("setValue", [42])];
 const description = "Proposal #1: Set value to 42";
 
 // User must have ETH for gas
-const tx = await govContract.propose(
-  targets,
-  values,
-  calldatas,
-  description,
-  { gasLimit: 500000 }
-);
+const tx = await govContract.propose(targets, values, calldatas, description, { gasLimit: 500000 });
 const receipt = await tx.wait();
 ```
 
 **Requirements:**
+
 - Caller must hold at least `proposalThreshold()` votes
 - Caller pays gas fees
 
@@ -78,6 +76,7 @@ const receipt = await tx.wait();
 ### castVote()
 
 **Function Signature:**
+
 ```solidity
 function castVote(
     uint256 proposalId,
@@ -86,21 +85,24 @@ function castVote(
 ```
 
 **Parameters:**
+
 - `proposalId`: The ID of the proposal
 - `support`: Vote choice (0 = Against, 1 = For, 2 = Abstain)
 
 **Usage:**
+
 ```javascript
 // User votes FOR a proposal
 const tx = await govContract.castVote(
   proposalId,
   1, // 1 = For
-  { gasLimit: 200000 }
+  { gasLimit: 200000 },
 );
 await tx.wait();
 ```
 
 **Requirements:**
+
 - Proposal must be in Active state
 - Caller must be a member (hold NFT)
 - Caller pays gas fees
@@ -110,6 +112,7 @@ await tx.wait();
 ### execute()
 
 **Function Signature:**
+
 ```solidity
 function execute(
     address[] memory targets,
@@ -120,28 +123,20 @@ function execute(
 ```
 
 **Usage:**
+
 ```javascript
 // Execute a successful proposal
 const targets = [targetContract.address];
 const values = [0];
-const calldatas = [
-  targetContract.interface.encodeFunctionData("setValue", [42])
-];
-const descriptionHash = ethers.utils.keccak256(
-  ethers.utils.toUtf8Bytes("Proposal #1: Set value to 42")
-);
+const calldatas = [targetContract.interface.encodeFunctionData("setValue", [42])];
+const descriptionHash = ethers.utils.keccak256(ethers.utils.toUtf8Bytes("Proposal #1: Set value to 42"));
 
-const tx = await govContract.execute(
-  targets,
-  values,
-  calldatas,
-  descriptionHash,
-  { gasLimit: 300000 }
-);
+const tx = await govContract.execute(targets, values, calldatas, descriptionHash, { gasLimit: 300000 });
 await tx.wait();
 ```
 
 **Requirements:**
+
 - Proposal must have succeeded (reached quorum and majority voted For)
 - Voting period must have ended
 - Caller pays gas fees
@@ -168,6 +163,7 @@ await tx.wait();
 ### executeUserOp()
 
 **Function Signature:**
+
 ```solidity
 function executeUserOp(UserOperation calldata userOp)
     external
@@ -191,12 +187,10 @@ struct UserOperation {
 ### Gasless propose()
 
 **Step 1: Create UserOperation**
+
 ```javascript
 // Encode the propose call
-const proposeCalldata = govContract.interface.encodeFunctionData(
-  "propose",
-  [targets, values, calldatas, description]
-);
+const proposeCalldata = govContract.interface.encodeFunctionData("propose", [targets, values, calldatas, description]);
 
 // Get user's current nonce
 const nonce = await govContract.getNonce(userAddress);
@@ -211,24 +205,24 @@ const userOp = {
   preVerificationGas: 21000,
   maxFeePerGas: ethers.utils.parseUnits("50", "gwei"),
   maxPriorityFeePerGas: ethers.utils.parseUnits("2", "gwei"),
-  signature: "0x" // Placeholder
+  signature: "0x", // Placeholder
 };
 ```
 
 **Step 2: Sign UserOperation**
+
 ```javascript
 // Get the hash to sign
 const userOpHash = await govContract.getUserOpHash(userOp);
 
 // User signs with their private key (OFFLINE - NO GAS NEEDED)
-const signature = await userWallet.signMessage(
-  ethers.utils.arrayify(userOpHash)
-);
+const signature = await userWallet.signMessage(ethers.utils.arrayify(userOpHash));
 
 userOp.signature = signature;
 ```
 
 **Step 3: Submit UserOperation**
+
 ```javascript
 // ANYONE can submit this (even a relayer service)
 // The submitter pays gas temporarily, but gets refunded by DAO treasury
@@ -236,9 +230,7 @@ const tx = await govContract.executeUserOp(userOp);
 const receipt = await tx.wait();
 
 // Check if successful
-console.log("UserOp success:", receipt.events.find(
-  e => e.event === "UserOperationExecuted"
-).args.success);
+console.log("UserOp success:", receipt.events.find((e) => e.event === "UserOperationExecuted").args.success);
 ```
 
 **User's ETH Balance:** **0 ETH** (completely gasless!)
@@ -248,10 +240,11 @@ console.log("UserOp success:", receipt.events.find(
 ### Gasless castVote()
 
 **Step 1: Create UserOperation**
+
 ```javascript
 const voteCalldata = govContract.interface.encodeFunctionData(
   "castVote",
-  [proposalId, 1] // 1 = For
+  [proposalId, 1], // 1 = For
 );
 
 const nonce = await govContract.getNonce(voterAddress);
@@ -265,20 +258,20 @@ const userOp = {
   preVerificationGas: 21000,
   maxFeePerGas: ethers.utils.parseUnits("50", "gwei"),
   maxPriorityFeePerGas: ethers.utils.parseUnits("2", "gwei"),
-  signature: "0x"
+  signature: "0x",
 };
 ```
 
 **Step 2: Sign UserOperation**
+
 ```javascript
 const userOpHash = await govContract.getUserOpHash(userOp);
-const signature = await voterWallet.signMessage(
-  ethers.utils.arrayify(userOpHash)
-);
+const signature = await voterWallet.signMessage(ethers.utils.arrayify(userOpHash));
 userOp.signature = signature;
 ```
 
 **Step 3: Submit UserOperation**
+
 ```javascript
 // Anyone submits (relayer, another member, etc.)
 const tx = await govContract.executeUserOp(userOp);
@@ -290,11 +283,14 @@ await tx.wait();
 ### Gasless execute()
 
 **Step 1: Create UserOperation**
+
 ```javascript
-const executeCalldata = govContract.interface.encodeFunctionData(
-  "execute",
-  [targets, values, calldatas, descriptionHash]
-);
+const executeCalldata = govContract.interface.encodeFunctionData("execute", [
+  targets,
+  values,
+  calldatas,
+  descriptionHash,
+]);
 
 const nonce = await govContract.getNonce(executorAddress);
 
@@ -307,20 +303,20 @@ const userOp = {
   preVerificationGas: 21000,
   maxFeePerGas: ethers.utils.parseUnits("50", "gwei"),
   maxPriorityFeePerGas: ethers.utils.parseUnits("2", "gwei"),
-  signature: "0x"
+  signature: "0x",
 };
 ```
 
 **Step 2: Sign UserOperation**
+
 ```javascript
 const userOpHash = await govContract.getUserOpHash(userOp);
-const signature = await executorWallet.signMessage(
-  ethers.utils.arrayify(userOpHash)
-);
+const signature = await executorWallet.signMessage(ethers.utils.arrayify(userOpHash));
 userOp.signature = signature;
 ```
 
 **Step 3: Submit UserOperation**
+
 ```javascript
 const tx = await govContract.executeUserOp(userOp);
 await tx.wait();
@@ -340,7 +336,8 @@ await tx.wait();
 
 ### How It Works
 
-EIP-7702 allows EOAs to temporarily delegate their execution to a smart contract. This is **simpler** than UserOperations:
+EIP-7702 allows EOAs to temporarily delegate their execution to a smart contract. This is **simpler** than
+UserOperations:
 
 1. **User signs authorization** to delegate to Gov contract (one-time per session)
 2. **User calls functions directly** - no relayer needed
@@ -352,13 +349,14 @@ EIP-7702 allows EOAs to temporarily delegate their execution to a smart contract
 ### EIP-7702 propose()
 
 **Step 1: Sign Authorization (Once per Session)**
+
 ```javascript
-import { signAuthorization } from 'viem/experimental'
+import { signAuthorization } from "viem/experimental";
 
 // User authorizes their EOA to delegate to Gov contract
 const authorization = await walletClient.signAuthorization({
   contractAddress: govContractAddress,
-})
+});
 
 // Authorization structure:
 // {
@@ -372,20 +370,21 @@ const authorization = await walletClient.signAuthorization({
 ```
 
 **Step 2: Call propose() Directly**
+
 ```javascript
 // User can now call propose directly - no UserOp needed!
 const hash = await walletClient.sendTransaction({
   to: govContractAddress,
   data: encodeFunctionData({
     abi: govAbi,
-    functionName: 'propose',
-    args: [targets, values, calldatas, description]
+    functionName: "propose",
+    args: [targets, values, calldatas, description],
   }),
   authorizationList: [authorization], // Include authorization
   // DAO pays gas - user needs ZERO ETH!
-})
+});
 
-await publicClient.waitForTransactionReceipt({ hash })
+await publicClient.waitForTransactionReceipt({ hash });
 ```
 
 **User's ETH Balance:** **0 ETH** (completely gasless!)
@@ -401,16 +400,17 @@ const hash = await walletClient.sendTransaction({
   to: govContractAddress,
   data: encodeFunctionData({
     abi: govAbi,
-    functionName: 'castVote',
-    args: [proposalId, 1] // 1 = For
+    functionName: "castVote",
+    args: [proposalId, 1], // 1 = For
   }),
   authorizationList: [authorization],
-})
+});
 
-await publicClient.waitForTransactionReceipt({ hash })
+await publicClient.waitForTransactionReceipt({ hash });
 ```
 
 **Benefits over UserOp:**
+
 - No UserOp struct creation
 - No custom signature verification
 - No relayer submission step
@@ -422,41 +422,41 @@ await publicClient.waitForTransactionReceipt({ hash })
 ### EIP-7702 execute()
 
 ```javascript
-const descriptionHash = keccak256(toUtf8Bytes(description))
+const descriptionHash = keccak256(toUtf8Bytes(description));
 
 const hash = await walletClient.sendTransaction({
   to: govContractAddress,
   data: encodeFunctionData({
     abi: govAbi,
-    functionName: 'execute',
-    args: [targets, values, calldatas, descriptionHash]
+    functionName: "execute",
+    args: [targets, values, calldatas, descriptionHash],
   }),
   authorizationList: [authorization],
-})
+});
 
-await publicClient.waitForTransactionReceipt({ hash })
+await publicClient.waitForTransactionReceipt({ hash });
 ```
 
 ---
 
 ## Comparison Table
 
-| Feature | Traditional | UserOperation | EIP-7702 |
-|---------|------------|---------------|----------|
-| **User needs ETH** | Yes | No (ZERO ETH) | No (ZERO ETH) |
-| **Who pays gas** | User | DAO Treasury | DAO Treasury |
-| **Requires signature** | Yes (tx) | Yes (offline UserOp) | Yes (authorization) |
-| **Who submits** | User only | Anyone (relayer) | User directly |
-| **Membership required** | Yes | Yes | Yes |
-| **Implementation** | Built-in | Custom contract | Protocol-native |
-| **Complexity** | Simple | Moderate | Simple |
-| **Gas efficiency** | Standard | Higher (verification) | Optimized (protocol) |
-| **Network support** | All EVM | All EVM | 329+ EVM chains |
-| **Code required** | None | GovSponsor.sol | None |
-| **Relayer needed** | No | Yes | No |
-| **Use case** | Users with ETH | Legacy support | **Recommended** |
-| **Gas tracking** | N/A | Tracked per member | N/A |
-| **Nonce system** | Ethereum nonce | Contract nonce | Ethereum nonce |
+| Feature                 | Traditional    | UserOperation         | EIP-7702             |
+| ----------------------- | -------------- | --------------------- | -------------------- |
+| **User needs ETH**      | Yes            | No (ZERO ETH)         | No (ZERO ETH)        |
+| **Who pays gas**        | User           | DAO Treasury          | DAO Treasury         |
+| **Requires signature**  | Yes (tx)       | Yes (offline UserOp)  | Yes (authorization)  |
+| **Who submits**         | User only      | Anyone (relayer)      | User directly        |
+| **Membership required** | Yes            | Yes                   | Yes                  |
+| **Implementation**      | Built-in       | Custom contract       | Protocol-native      |
+| **Complexity**          | Simple         | Moderate              | Simple               |
+| **Gas efficiency**      | Standard       | Higher (verification) | Optimized (protocol) |
+| **Network support**     | All EVM        | All EVM               | 329+ EVM chains      |
+| **Code required**       | None           | GovSponsor.sol        | None                 |
+| **Relayer needed**      | No             | Yes                   | No                   |
+| **Use case**            | Users with ETH | Legacy support        | **Recommended**      |
+| **Gas tracking**        | N/A            | Tracked per member    | N/A                  |
+| **Nonce system**        | Ethereum nonce | Contract nonce        | Ethereum nonce       |
 
 ---
 
@@ -468,14 +468,10 @@ await publicClient.waitForTransactionReceipt({ hash })
 // 1. PROPOSE (Alice pays gas)
 const targets = [targetContract.address];
 const values = [0];
-const calldatas = [
-  targetContract.interface.encodeFunctionData("setValue", [42])
-];
+const calldatas = [targetContract.interface.encodeFunctionData("setValue", [42])];
 const description = "Set value to 42";
 
-const proposeTx = await govContract.connect(alice).propose(
-  targets, values, calldatas, description
-);
+const proposeTx = await govContract.connect(alice).propose(targets, values, calldatas, description);
 const proposeReceipt = await proposeTx.wait();
 const proposalId = proposeReceipt.events[0].args.proposalId;
 
@@ -492,12 +488,8 @@ for (let i = 0; i < 100; i++) {
 }
 
 // 5. EXECUTE (Anyone pays gas)
-const descriptionHash = ethers.utils.keccak256(
-  ethers.utils.toUtf8Bytes(description)
-);
-await govContract.connect(alice).execute(
-  targets, values, calldatas, descriptionHash
-);
+const descriptionHash = ethers.utils.keccak256(ethers.utils.toUtf8Bytes(description));
+await govContract.connect(alice).execute(targets, values, calldatas, descriptionHash);
 ```
 
 **Cost:** Alice + Bob pay gas fees
@@ -519,23 +511,18 @@ async function createUserOp(signer, callData) {
     preVerificationGas: 21000,
     maxFeePerGas: ethers.utils.parseUnits("50", "gwei"),
     maxPriorityFeePerGas: ethers.utils.parseUnits("2", "gwei"),
-    signature: "0x"
+    signature: "0x",
   };
 
   const userOpHash = await govContract.getUserOpHash(userOp);
-  const signature = await signer.signMessage(
-    ethers.utils.arrayify(userOpHash)
-  );
+  const signature = await signer.signMessage(ethers.utils.arrayify(userOpHash));
   userOp.signature = signature;
 
   return userOp;
 }
 
 // 1. PROPOSE (Alice signs, relayer submits)
-const proposeCalldata = govContract.interface.encodeFunctionData(
-  "propose",
-  [targets, values, calldatas, description]
-);
+const proposeCalldata = govContract.interface.encodeFunctionData("propose", [targets, values, calldatas, description]);
 const proposeOp = await createUserOp(alice, proposeCalldata);
 
 // Relayer submits (pays gas temporarily, gets refunded)
@@ -543,16 +530,13 @@ const proposeTx = await govContract.connect(relayer).executeUserOp(proposeOp);
 await proposeTx.wait();
 
 // Get proposal ID from event
-const proposalId = (await govContract.proposalIds(0));
+const proposalId = await govContract.proposalIds(0);
 
 // 2. WAIT for voting to start
 await ethers.provider.send("evm_mine", []);
 
 // 3. CAST VOTES (Alice and Bob sign, relayer submits)
-const voteCalldata = govContract.interface.encodeFunctionData(
-  "castVote",
-  [proposalId, 1]
-);
+const voteCalldata = govContract.interface.encodeFunctionData("castVote", [proposalId, 1]);
 
 const aliceVoteOp = await createUserOp(alice, voteCalldata);
 await govContract.connect(relayer).executeUserOp(aliceVoteOp);
@@ -566,13 +550,13 @@ for (let i = 0; i < 100; i++) {
 }
 
 // 5. EXECUTE (Alice signs, relayer submits)
-const descriptionHash = ethers.utils.keccak256(
-  ethers.utils.toUtf8Bytes(description)
-);
-const executeCalldata = govContract.interface.encodeFunctionData(
-  "execute",
-  [targets, values, calldatas, descriptionHash]
-);
+const descriptionHash = ethers.utils.keccak256(ethers.utils.toUtf8Bytes(description));
+const executeCalldata = govContract.interface.encodeFunctionData("execute", [
+  targets,
+  values,
+  calldatas,
+  descriptionHash,
+]);
 
 const executeOp = await createUserOp(alice, executeCalldata);
 await govContract.connect(relayer).executeUserOp(executeOp);
@@ -588,16 +572,11 @@ You can mix both methods in the same workflow:
 
 ```javascript
 // Alice (has ETH) proposes traditionally
-const proposeTx = await govContract.connect(alice).propose(
-  targets, values, calldatas, description
-);
+const proposeTx = await govContract.connect(alice).propose(targets, values, calldatas, description);
 const proposalId = (await proposeTx.wait()).events[0].args.proposalId;
 
 // Bob (no ETH) votes via UserOp
-const voteCalldata = govContract.interface.encodeFunctionData(
-  "castVote",
-  [proposalId, 1]
-);
+const voteCalldata = govContract.interface.encodeFunctionData("castVote", [proposalId, 1]);
 const bobVoteOp = await createUserOp(bob, voteCalldata);
 await govContract.connect(relayer).executeUserOp(bobVoteOp);
 
@@ -605,16 +584,15 @@ await govContract.connect(relayer).executeUserOp(bobVoteOp);
 await govContract.connect(alice).castVote(proposalId, 1);
 
 // Anyone executes traditionally
-await govContract.connect(charlie).execute(
-  targets, values, calldatas, descriptionHash
-);
+await govContract.connect(charlie).execute(targets, values, calldatas, descriptionHash);
 ```
 
 ---
 
 ## Next.js Integration
 
-This section demonstrates how to integrate both traditional and gasless governance interactions in a Next.js application.
+This section demonstrates how to integrate both traditional and gasless governance interactions in a Next.js
+application.
 
 ### Project Setup
 
@@ -630,6 +608,7 @@ npm install @rainbow-me/rainbowkit  # Optional: for wallet connection UI
 ### Configuration
 
 **lib/contracts.ts**
+
 ```typescript
 export const GOV_CONTRACT_ADDRESS = "0x..."; // Your deployed Gov contract
 
@@ -653,13 +632,14 @@ export const GOV_ABI = [
   // Events
   "event ProposalCreated(uint256 proposalId, address proposer, address[] targets, uint256[] values, string[] signatures, bytes[] calldatas, uint256 voteStart, uint256 voteEnd, string description)",
   "event VoteCast(address indexed voter, uint256 proposalId, uint8 support, uint256 weight, string reason)",
-  "event UserOperationExecuted(address indexed sender, uint256 nonce, bool success, uint256 gasUsed)"
+  "event UserOperationExecuted(address indexed sender, uint256 nonce, bool success, uint256 gasUsed)",
 ];
 ```
 
 ### Traditional Method in Next.js
 
 **components/TraditionalPropose.tsx**
+
 ```typescript
 "use client";
 
@@ -748,6 +728,7 @@ export function TraditionalPropose() {
 ```
 
 **components/TraditionalVote.tsx**
+
 ```typescript
 "use client";
 
@@ -825,6 +806,7 @@ export function TraditionalVote() {
 ### Gasless Method in Next.js
 
 **lib/userOp.ts**
+
 ```typescript
 import { ethers } from "ethers";
 import { GOV_CONTRACT_ADDRESS, GOV_ABI } from "./contracts";
@@ -844,7 +826,7 @@ export interface UserOperation {
 export async function createUserOp(
   provider: ethers.Provider,
   signer: ethers.Signer,
-  callData: string
+  callData: string,
 ): Promise<UserOperation> {
   const contract = new ethers.Contract(GOV_CONTRACT_ADDRESS, GOV_ABI, provider);
   const signerAddress = await signer.getAddress();
@@ -864,7 +846,7 @@ export async function createUserOp(
     preVerificationGas: 21000n,
     maxFeePerGas: feeData.maxFeePerGas || ethers.parseUnits("50", "gwei"),
     maxPriorityFeePerGas: feeData.maxPriorityFeePerGas || ethers.parseUnits("2", "gwei"),
-    signature: "0x"
+    signature: "0x",
   };
 
   // Get hash to sign
@@ -879,6 +861,7 @@ export async function createUserOp(
 ```
 
 **components/GaslessPropose.tsx**
+
 ```typescript
 "use client";
 
@@ -999,6 +982,7 @@ export function GaslessPropose() {
 ```
 
 **components/GaslessVote.tsx**
+
 ```typescript
 "use client";
 
@@ -1111,6 +1095,7 @@ export function GaslessVote() {
 ### Complete Page Example
 
 **app/governance/page.tsx**
+
 ```typescript
 import { TraditionalPropose } from "@/components/TraditionalPropose";
 import { TraditionalVote } from "@/components/TraditionalVote";
@@ -1139,6 +1124,7 @@ export default function GovernancePage() {
 ### API Route for Relayer (Optional)
 
 **app/api/relay-userop/route.ts**
+
 ```typescript
 import { NextRequest, NextResponse } from "next/server";
 import { ethers } from "ethers";
@@ -1160,24 +1146,28 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       txHash: receipt.hash,
-      gasUsed: receipt.gasUsed.toString()
+      gasUsed: receipt.gasUsed.toString(),
     });
   } catch (error: any) {
-    return NextResponse.json({
-      success: false,
-      error: error.message
-    }, { status: 500 });
+    return NextResponse.json(
+      {
+        success: false,
+        error: error.message,
+      },
+      { status: 500 },
+    );
   }
 }
 ```
 
 **Usage with Relayer API:**
+
 ```typescript
 // In your component, instead of calling writeContract directly:
 const response = await fetch("/api/relay-userop", {
   method: "POST",
   headers: { "Content-Type": "application/json" },
-  body: JSON.stringify(userOp)
+  body: JSON.stringify(userOp),
 });
 
 const result = await response.json();
@@ -1189,6 +1179,7 @@ if (result.success) {
 ### Server Component Example - Display Proposals
 
 **app/governance/proposals/page.tsx**
+
 ```typescript
 import { ethers } from "ethers";
 import { GOV_CONTRACT_ADDRESS, GOV_ABI } from "@/lib/contracts";
@@ -1235,21 +1226,23 @@ export default async function ProposalsPage() {
 ### EIP-7702 Method in Next.js (Recommended)
 
 **lib/eip7702.ts**
+
 ```typescript
-import { signAuthorization } from 'viem/experimental'
-import { type WalletClient } from 'viem'
-import { GOV_CONTRACT_ADDRESS } from "./contracts"
+import { signAuthorization } from "viem/experimental";
+import { type WalletClient } from "viem";
+import { GOV_CONTRACT_ADDRESS } from "./contracts";
 
 export async function createAuthorization(walletClient: WalletClient) {
   const authorization = await walletClient.signAuthorization({
     contractAddress: GOV_CONTRACT_ADDRESS as `0x${string}`,
-  })
+  });
 
-  return authorization
+  return authorization;
 }
 ```
 
 **components/EIP7702Propose.tsx**
+
 ```typescript
 "use client";
 
@@ -1394,6 +1387,7 @@ export function EIP7702Propose() {
 ```
 
 **components/EIP7702Vote.tsx**
+
 ```typescript
 "use client";
 
@@ -1534,6 +1528,7 @@ export function EIP7702Vote() {
 ```
 
 **Update app/governance/page.tsx to include EIP-7702:**
+
 ```typescript
 import { TraditionalPropose } from "@/components/TraditionalPropose";
 import { TraditionalVote } from "@/components/TraditionalVote";
@@ -1575,6 +1570,7 @@ export default function GovernancePage() {
 ### Real-time Updates with Polling
 
 **hooks/useProposalState.ts**
+
 ```typescript
 import { useEffect, useState } from "react";
 import { usePublicClient } from "wagmi";
@@ -1605,7 +1601,7 @@ export function useProposalState(proposalId: string) {
 
   return {
     state,
-    stateName: state !== null ? stateNames[state] : "Unknown"
+    stateName: state !== null ? stateNames[state] : "Unknown",
   };
 }
 ```
@@ -1641,6 +1637,7 @@ console.log(`Member has used ${gasUsed} gas units`);
 ```
 
 This allows the DAO to:
+
 - Monitor treasury usage
 - Set spending limits per member
 - Analyze governance participation costs
@@ -1651,12 +1648,14 @@ This allows the DAO to:
 ## Best Practices
 
 ### When to use Traditional Method
+
 - User already has ETH
 - Simple, one-off interactions
 - No need for gas abstraction
 - Lower integration complexity
 
 ### When to use UserOperations
+
 - Onboarding new members without ETH
 - Building inclusive DAOs
 - Meta-transaction services
@@ -1664,7 +1663,9 @@ This allows the DAO to:
 - Mobile-first applications
 
 ### Relayer Services
+
 Consider building or integrating with a relayer service that:
+
 - Accepts signed UserOperations
 - Submits them on behalf of users
 - Gets reimbursed by DAO treasury
@@ -1675,6 +1676,7 @@ Consider building or integrating with a relayer service that:
 ## Testing
 
 See [GovSponsor.t.sol](../test/unit/GovSponsor.t.sol) for comprehensive tests including:
+
 - Traditional workflow (`propose` → `castVote` → `execute`)
 - Gasless workflow (all operations via UserOps)
 - Security tests (invalid signatures, non-members, nonce replay)
