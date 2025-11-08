@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0
-pragma solidity ^0.8.24;
+pragma solidity >=0.8.29 <0.9.0;
 
 import { Governor } from "@openzeppelin/contracts/governance/Governor.sol";
 import { GovernorSettings } from "@openzeppelin/contracts/governance/extensions/GovernorSettings.sol";
@@ -15,6 +15,7 @@ import { GovProposalTracking } from "./extensions/GovProposalTracking.sol";
  * @author W3HC
  * @notice Implementation of a DAO with cross-chain synchronization capabilities
  * @dev Extends OpenZeppelin's Governor contract with cross-chain parameter updates
+ * @dev Supports EIP-7702 for gasless transactions via EOA code delegation
  * @custom:security-contact julien@strat.cc
  */
 contract Gov is
@@ -254,7 +255,7 @@ contract Gov is
 
     /**
      * @notice Submits a new proposal
-     * @dev Overrides the propose function from multiple inherited contracts
+     * @dev Required override to resolve diamond inheritance between Governor and GovProposalTracking
      * @param targets Array of target addresses for proposal calls
      * @param values Array of values for proposal calls
      * @param calldatas Array of calldatas for proposal calls

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0
-pragma solidity ^0.8.24;
+pragma solidity >=0.8.29 <0.9.0;
 
 import { Gov } from "./Gov.sol";
 import { NFT } from "./NFT.sol";
@@ -25,7 +25,7 @@ contract GovFactory {
      * @param votingPeriod Duration of voting in blocks
      * @param proposalThreshold Minimum votes needed to propose
      * @param quorumPercentage Minimum participation percentage
-     * @return Address of the newly deployed governance contract
+     * @return gov Address of the newly deployed governance contract
      */
     function deployGov(
         uint256 homeChainId,
@@ -39,18 +39,23 @@ contract GovFactory {
         uint256 quorumPercentage
     )
         external
-        returns (address)
+        returns (address gov)
     {
         bytes32 govSalt = keccak256(abi.encodePacked(salt, "GOV"));
-        address govAddress = address(
-            new Gov{ salt: govSalt }(
+        bytes memory bytecode = abi.encodePacked(
+            type(Gov).creationCode,
+            abi.encode(
                 homeChainId, nft, manifestoCid, name, votingDelay, votingPeriod, proposalThreshold, quorumPercentage
             )
         );
 
-        NFT(nft).transferOwnership(govAddress);
+        assembly {
+            gov := create2(0, add(bytecode, 0x20), mload(bytecode), govSalt)
+            if iszero(gov) { revert(0, 0) }
+        }
 
-        emit GovDeployed(govAddress);
-        return govAddress;
+        NFT(nft).transferOwnership(gov);
+
+        emit GovDeployed(gov);
     }
 }
