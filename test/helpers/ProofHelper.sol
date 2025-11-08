@@ -32,8 +32,7 @@ library ProofHelper {
         pure
         returns (bytes memory)
     {
-        bytes32 message =
-            keccak256(abi.encodePacked(contractAddress, uint8(NFT.OperationType.MINT), tokenId, to, uri));
+        bytes32 message = keccak256(abi.encodePacked(contractAddress, uint8(NFT.OperationType.MINT), tokenId, to, uri));
         bytes32 digest = keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", message));
 
         return abi.encode(tokenId, to, uri, digest);
@@ -109,7 +108,10 @@ library ProofHelper {
      * @param manifesto New manifesto CID
      * @return proof Encoded proof data
      */
-    function generateManifestoProof(address contractAddress, string memory manifesto)
+    function generateManifestoProof(
+        address contractAddress,
+        string memory manifesto
+    )
         internal
         pure
         returns (bytes memory)
@@ -160,11 +162,7 @@ library ProofHelper {
      * @param newPeriod New voting period value
      * @return proof Encoded proof data
      */
-    function generateVotingPeriodProof(address contractAddress, uint32 newPeriod)
-        internal
-        pure
-        returns (bytes memory)
-    {
+    function generateVotingPeriodProof(address contractAddress, uint32 newPeriod) internal pure returns (bytes memory) {
         bytes memory valueBytes = abi.encodePacked(newPeriod);
         return generateParameterProof(contractAddress, Gov.OperationType.UPDATE_VOTING_PERIOD, valueBytes);
     }
@@ -175,7 +173,10 @@ library ProofHelper {
      * @param newThreshold New proposal threshold value
      * @return proof Encoded proof data
      */
-    function generateProposalThresholdProof(address contractAddress, uint256 newThreshold)
+    function generateProposalThresholdProof(
+        address contractAddress,
+        uint256 newThreshold
+    )
         internal
         pure
         returns (bytes memory)
@@ -219,8 +220,7 @@ library ProofHelper {
         returns (bytes memory)
     {
         // Generate a valid message but corrupt the digest
-        bytes32 message =
-            keccak256(abi.encodePacked(contractAddress, uint8(NFT.OperationType.MINT), tokenId, to, uri));
+        bytes32 message = keccak256(abi.encodePacked(contractAddress, uint8(NFT.OperationType.MINT), tokenId, to, uri));
         bytes32 invalidDigest = keccak256(abi.encodePacked(message, "corrupted"));
 
         return abi.encode(tokenId, to, uri, invalidDigest);
@@ -231,7 +231,11 @@ library ProofHelper {
      * @param manifesto Manifesto CID
      * @return proof Invalid proof data
      */
-    function generateInvalidManifestoProof(address /* contractAddress */, string memory manifesto)
+    function generateInvalidManifestoProof(
+        address,
+        /* contractAddress */
+        string memory manifesto
+    )
         internal
         pure
         returns (bytes memory)

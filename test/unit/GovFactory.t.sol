@@ -41,8 +41,7 @@ contract GovFactoryTest is BaseTest {
         address[] memory members = createInitialMembers(2);
 
         vm.prank(deployer);
-        address nftAddress =
-            nftFactory.deployNFT(OPTIMISM, TEST_SALT, members, "Test DAO", "TDAO", "ipfs://QmTestURI");
+        address nftAddress = nftFactory.deployNFT(OPTIMISM, TEST_SALT, members, "Test DAO", "TDAO", "ipfs://QmTestURI");
 
         NFT nft = NFT(nftAddress);
 
@@ -72,8 +71,7 @@ contract GovFactoryTest is BaseTest {
         address[] memory members = createInitialMembers(2);
 
         vm.prank(deployer);
-        address nftAddress =
-            nftFactory.deployNFT(OPTIMISM, TEST_SALT, members, "Test DAO", "TDAO", "ipfs://QmTestURI");
+        address nftAddress = nftFactory.deployNFT(OPTIMISM, TEST_SALT, members, "Test DAO", "TDAO", "ipfs://QmTestURI");
 
         NFT nft = NFT(nftAddress);
 
@@ -84,7 +82,15 @@ contract GovFactoryTest is BaseTest {
 
         vm.prank(deployer);
         address govAddress = govFactory.deployGov(
-            OPTIMISM, TEST_SALT, nft, "QmManifesto", "Test DAO", customDelay, customPeriod, customThreshold, customQuorum
+            OPTIMISM,
+            TEST_SALT,
+            nft,
+            "QmManifesto",
+            "Test DAO",
+            customDelay,
+            customPeriod,
+            customThreshold,
+            customQuorum
         );
 
         Gov gov = Gov(payable(govAddress));
@@ -98,8 +104,7 @@ contract GovFactoryTest is BaseTest {
         address[] memory members = createInitialMembers(2);
 
         vm.prank(deployer);
-        address nftAddress =
-            nftFactory.deployNFT(OPTIMISM, TEST_SALT, members, "Test DAO", "TDAO", "ipfs://QmTestURI");
+        address nftAddress = nftFactory.deployNFT(OPTIMISM, TEST_SALT, members, "Test DAO", "TDAO", "ipfs://QmTestURI");
 
         NFT nft = NFT(nftAddress);
 
@@ -127,8 +132,7 @@ contract GovFactoryTest is BaseTest {
         address[] memory members = createInitialMembers(2);
 
         vm.prank(deployer);
-        address nftAddress =
-            nftFactory.deployNFT(OPTIMISM, TEST_SALT, members, "Test DAO", "TDAO", "ipfs://QmTestURI");
+        address nftAddress = nftFactory.deployNFT(OPTIMISM, TEST_SALT, members, "Test DAO", "TDAO", "ipfs://QmTestURI");
 
         NFT nft = NFT(nftAddress);
 
@@ -155,8 +159,7 @@ contract GovFactoryTest is BaseTest {
         vm.startPrank(deployer);
 
         // Deploy NFT
-        address nft1Address =
-            nftFactory.deployNFT(OPTIMISM, TEST_SALT, members, "Test DAO", "TDAO", "ipfs://QmTestURI");
+        address nft1Address = nftFactory.deployNFT(OPTIMISM, TEST_SALT, members, "Test DAO", "TDAO", "ipfs://QmTestURI");
 
         // Deploy Gov with specific salt
         address gov1 = govFactory.deployGov(
@@ -244,8 +247,7 @@ contract GovFactoryTest is BaseTest {
         address[] memory members = createInitialMembers(2);
 
         vm.prank(deployer);
-        address nftAddress =
-            nftFactory.deployNFT(OPTIMISM, TEST_SALT, members, "Test DAO", "TDAO", "ipfs://QmTestURI");
+        address nftAddress = nftFactory.deployNFT(OPTIMISM, TEST_SALT, members, "Test DAO", "TDAO", "ipfs://QmTestURI");
 
         NFT nft = NFT(nftAddress);
 
@@ -276,8 +278,7 @@ contract GovFactoryTest is BaseTest {
         vm.startPrank(deployer);
 
         // 1. Deploy NFT
-        address nftAddress =
-            nftFactory.deployNFT(OPTIMISM, TEST_SALT, members, "Test DAO", "TDAO", "ipfs://QmTestURI");
+        address nftAddress = nftFactory.deployNFT(OPTIMISM, TEST_SALT, members, "Test DAO", "TDAO", "ipfs://QmTestURI");
 
         NFT nft = NFT(nftAddress);
 
@@ -317,8 +318,7 @@ contract GovFactoryTest is BaseTest {
         // Deploy full DAO setup
         vm.startPrank(deployer);
 
-        address nftAddress =
-            nftFactory.deployNFT(OPTIMISM, TEST_SALT, members, "Test DAO", "TDAO", "ipfs://QmTestURI");
+        address nftAddress = nftFactory.deployNFT(OPTIMISM, TEST_SALT, members, "Test DAO", "TDAO", "ipfs://QmTestURI");
 
         address govAddress = govFactory.deployGov(
             OPTIMISM,

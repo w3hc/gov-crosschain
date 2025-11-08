@@ -47,8 +47,7 @@ contract NFTFactoryTest is BaseTest {
         address[] memory members = createInitialMembers(2);
 
         vm.prank(deployer);
-        address nftAddress =
-            nftFactory.deployNFT(OPTIMISM, TEST_SALT, members, "Test DAO", "TDAO", "ipfs://QmTestURI");
+        address nftAddress = nftFactory.deployNFT(OPTIMISM, TEST_SALT, members, "Test DAO", "TDAO", "ipfs://QmTestURI");
 
         assertNotZeroAddress(nftAddress, "NFT address is zero");
 
@@ -62,8 +61,7 @@ contract NFTFactoryTest is BaseTest {
         address[] memory members = createInitialMembers(3);
 
         vm.prank(deployer);
-        address nftAddress =
-            nftFactory.deployNFT(OPTIMISM, TEST_SALT, members, "Test DAO", "TDAO", "ipfs://QmTestURI");
+        address nftAddress = nftFactory.deployNFT(OPTIMISM, TEST_SALT, members, "Test DAO", "TDAO", "ipfs://QmTestURI");
 
         NFT nft = NFT(nftAddress);
         assertEq(nft.totalSupply(), 3);
@@ -76,8 +74,7 @@ contract NFTFactoryTest is BaseTest {
         address[] memory members = createInitialMembers(2);
 
         vm.prank(deployer);
-        address nftAddress =
-            nftFactory.deployNFT(OPTIMISM, TEST_SALT, members, "Test DAO", "TDAO", "ipfs://QmTestURI");
+        address nftAddress = nftFactory.deployNFT(OPTIMISM, TEST_SALT, members, "Test DAO", "TDAO", "ipfs://QmTestURI");
 
         NFT nft = NFT(nftAddress);
         assertEq(nft.owner(), address(govFactory));
@@ -98,8 +95,7 @@ contract NFTFactoryTest is BaseTest {
 
         // Deploy with specific salt
         vm.prank(deployer);
-        address nft1 =
-            nftFactory.deployNFT(OPTIMISM, TEST_SALT, members, "Test DAO", "TDAO", "ipfs://QmTestURI");
+        address nft1 = nftFactory.deployNFT(OPTIMISM, TEST_SALT, members, "Test DAO", "TDAO", "ipfs://QmTestURI");
 
         // Verify the address is deterministic (non-zero and valid contract)
         assertNotZeroAddress(nft1, "NFT address should not be zero");
@@ -108,8 +104,7 @@ contract NFTFactoryTest is BaseTest {
         // Deploy with different salt produces different address
         bytes32 differentSalt = bytes32(uint256(0x9999));
         vm.prank(deployer);
-        address nft2 =
-            nftFactory.deployNFT(OPTIMISM, differentSalt, members, "Test DAO", "TDAO", "ipfs://QmTestURI");
+        address nft2 = nftFactory.deployNFT(OPTIMISM, differentSalt, members, "Test DAO", "TDAO", "ipfs://QmTestURI");
 
         assertTrue(nft1 != nft2, "Different salts should produce different addresses");
     }
@@ -119,12 +114,10 @@ contract NFTFactoryTest is BaseTest {
 
         vm.startPrank(deployer);
 
-        address nft1 =
-            nftFactory.deployNFT(OPTIMISM, TEST_SALT, members, "Test DAO", "TDAO", "ipfs://QmTestURI");
+        address nft1 = nftFactory.deployNFT(OPTIMISM, TEST_SALT, members, "Test DAO", "TDAO", "ipfs://QmTestURI");
 
         bytes32 differentSalt = bytes32(uint256(0x5678));
-        address nft2 =
-            nftFactory.deployNFT(OPTIMISM, differentSalt, members, "Test DAO", "TDAO", "ipfs://QmTestURI");
+        address nft2 = nftFactory.deployNFT(OPTIMISM, differentSalt, members, "Test DAO", "TDAO", "ipfs://QmTestURI");
 
         vm.stopPrank();
 
@@ -135,8 +128,7 @@ contract NFTFactoryTest is BaseTest {
         address[] memory members = new address[](0);
 
         vm.prank(deployer);
-        address nftAddress =
-            nftFactory.deployNFT(OPTIMISM, TEST_SALT, members, "Test DAO", "TDAO", "ipfs://QmTestURI");
+        address nftAddress = nftFactory.deployNFT(OPTIMISM, TEST_SALT, members, "Test DAO", "TDAO", "ipfs://QmTestURI");
 
         NFT nft = NFT(nftAddress);
         assertEq(nft.totalSupply(), 0);
@@ -146,8 +138,7 @@ contract NFTFactoryTest is BaseTest {
         address[] memory members = createInitialMembers(1);
 
         vm.prank(deployer);
-        address nftAddress =
-            nftFactory.deployNFT(OPTIMISM, TEST_SALT, members, "Test DAO", "TDAO", "ipfs://QmTestURI");
+        address nftAddress = nftFactory.deployNFT(OPTIMISM, TEST_SALT, members, "Test DAO", "TDAO", "ipfs://QmTestURI");
 
         NFT nft = NFT(nftAddress);
         assertEq(nft.totalSupply(), 1);
@@ -175,8 +166,7 @@ contract NFTFactoryTest is BaseTest {
 
         // Deploy NFT via NFTFactory
         vm.prank(deployer);
-        address nftAddress =
-            nftFactory.deployNFT(OPTIMISM, TEST_SALT, members, "Test DAO", "TDAO", "ipfs://QmTestURI");
+        address nftAddress = nftFactory.deployNFT(OPTIMISM, TEST_SALT, members, "Test DAO", "TDAO", "ipfs://QmTestURI");
 
         NFT nft = NFT(nftAddress);
 

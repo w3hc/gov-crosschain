@@ -432,13 +432,7 @@ contract NFT is ERC721, ERC721Enumerable, ERC721URIStorage, ERC721Burnable, Owna
      * @param account Address to increase balance for
      * @param value Amount to increase by
      */
-    function _increaseBalance(
-        address account,
-        uint128 value
-    )
-        internal
-        override(ERC721, ERC721Enumerable, ERC721Votes)
-    {
+    function _increaseBalance(address account, uint128 value) internal override(ERC721, ERC721Enumerable, ERC721Votes) {
         super._increaseBalance(account, value);
     }
 
