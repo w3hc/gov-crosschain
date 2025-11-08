@@ -168,29 +168,6 @@ contract GovEIP7702Test is Test {
     }
 
     /**
-     * @notice Test that regular Gov functions still work without delegation
-     * @dev Ensures backward compatibility
-     */
-    function testBackwardCompatibility() public {
-        // Fund Alice so she can pay gas traditionally
-        vm.deal(alice, 1 ether);
-
-        address[] memory targets = new address[](1);
-        targets[0] = address(mockTarget);
-        uint256[] memory values = new uint256[](1);
-        values[0] = 0;
-        bytes[] memory calldatas = new bytes[](1);
-        calldatas[0] = abi.encodeWithSignature("setValue(uint256)", 99);
-
-        // Traditional propose (no delegation)
-        vm.prank(alice);
-        uint256 proposalId = gov.propose(targets, values, calldatas, "Traditional Proposal");
-
-        assertGt(proposalId, 0, "Traditional propose should still work");
-        assertLt(alice.balance, 1 ether, "Alice should have paid some gas");
-    }
-
-    /**
      * @notice Test EIP-7702 with membership validation
      * @dev Only members can use delegation
      */

@@ -9,14 +9,13 @@ import {
     GovernorVotesQuorumFraction
 } from "@openzeppelin/contracts/governance/extensions/GovernorVotesQuorumFraction.sol";
 import { GovProposalTracking } from "./extensions/GovProposalTracking.sol";
-import { GovSponsor } from "./extensions/GovSponsor.sol";
-import { IERC721 } from "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 
 /**
  * @title Gov
  * @author W3HC
  * @notice Implementation of a DAO with cross-chain synchronization capabilities
  * @dev Extends OpenZeppelin's Governor contract with cross-chain parameter updates
+ * @dev Supports EIP-7702 for gasless transactions via EOA code delegation
  * @custom:security-contact julien@strat.cc
  */
 contract Gov is
@@ -25,8 +24,7 @@ contract Gov is
     GovernorCountingSimple,
     GovernorVotes,
     GovernorVotesQuorumFraction,
-    GovProposalTracking,
-    GovSponsor
+    GovProposalTracking
 {
     /// @notice Chain ID where this contract was originally deployed
     uint256 public immutable HOME;
@@ -104,10 +102,6 @@ contract Gov is
     {
         HOME = _home;
         manifesto = _manifestoCid;
-
-        // Initialize sponsorship extension
-        // Cast IVotes to IERC721 since the membership token implements both
-        _initializeGovSponsor(IERC721(address(_token)));
     }
 
     /**

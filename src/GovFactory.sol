@@ -44,7 +44,9 @@ contract GovFactory {
         bytes32 govSalt = keccak256(abi.encodePacked(salt, "GOV"));
         bytes memory bytecode = abi.encodePacked(
             type(Gov).creationCode,
-            abi.encode(homeChainId, nft, manifestoCid, name, votingDelay, votingPeriod, proposalThreshold, quorumPercentage)
+            abi.encode(
+                homeChainId, nft, manifestoCid, name, votingDelay, votingPeriod, proposalThreshold, quorumPercentage
+            )
         );
 
         assembly {
