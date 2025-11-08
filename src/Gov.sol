@@ -9,6 +9,8 @@ import {
     GovernorVotesQuorumFraction
 } from "@openzeppelin/contracts/governance/extensions/GovernorVotesQuorumFraction.sol";
 import { GovProposalTracking } from "./extensions/GovProposalTracking.sol";
+import { GovSponsor } from "./extensions/GovSponsor.sol";
+import { IERC721 } from "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 
 /**
  * @title Gov
@@ -23,7 +25,8 @@ contract Gov is
     GovernorCountingSimple,
     GovernorVotes,
     GovernorVotesQuorumFraction,
-    GovProposalTracking
+    GovProposalTracking,
+    GovSponsor
 {
     /// @notice Chain ID where this contract was originally deployed
     uint256 public immutable HOME;
@@ -101,6 +104,10 @@ contract Gov is
     {
         HOME = _home;
         manifesto = _manifestoCid;
+
+        // Initialize sponsorship extension
+        // Cast IVotes to IERC721 since the membership token implements both
+        _initializeGovSponsor(IERC721(address(_token)));
     }
 
     /**
@@ -254,7 +261,7 @@ contract Gov is
 
     /**
      * @notice Submits a new proposal
-     * @dev Overrides the propose function from multiple inherited contracts
+     * @dev Required override to resolve diamond inheritance between Governor and GovProposalTracking
      * @param targets Array of target addresses for proposal calls
      * @param values Array of values for proposal calls
      * @param calldatas Array of calldatas for proposal calls
@@ -312,4 +319,22 @@ contract Gov is
     function proposalThreshold() public view override(Governor, GovernorSettings) returns (uint256) {
         return super.proposalThreshold();
     }
+
+    /**
+     * @notice Override _msgSender to support UserOperation context
+     * @dev When executing via UserOp, returns the actual user instead of this contract
+     * @return The effective message sender (user in UserOp context, or msg.sender otherwise)
+     */
+    function _msgSender() internal view virtual override returns (address) {
+        address userOpSender = _currentUserOpSender();
+        if (userOpSender != address(0)) {
+            return userOpSender;
+        }
+        return msg.sender;
+    }
+
+    /**
+     * @notice Allows the contract to receive ETH for gas sponsorship
+     */
+    receive() external payable override { }
 }

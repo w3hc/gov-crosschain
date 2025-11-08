@@ -13,7 +13,7 @@
   solc = "0.8.24"
   src = "src"
   test = "test"
-  viaIR = true
+  via_ir = false
   sender = "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
 
 [profile.ci]
