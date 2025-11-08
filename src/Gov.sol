@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0
-pragma solidity ^0.8.24;
+pragma solidity >=0.8.29 <0.9.0;
 
 import { Governor } from "@openzeppelin/contracts/governance/Governor.sol";
 import { GovernorSettings } from "@openzeppelin/contracts/governance/extensions/GovernorSettings.sol";
@@ -318,18 +318,5 @@ contract Gov is
      */
     function proposalThreshold() public view override(Governor, GovernorSettings) returns (uint256) {
         return super.proposalThreshold();
-    }
-
-    /**
-     * @notice Override _msgSender to support UserOperation context
-     * @dev When executing via UserOp, returns the actual user instead of this contract
-     * @return The effective message sender (user in UserOp context, or msg.sender otherwise)
-     */
-    function _msgSender() internal view virtual override returns (address) {
-        address userOpSender = _currentUserOpSender();
-        if (userOpSender != address(0)) {
-            return userOpSender;
-        }
-        return msg.sender;
     }
 }
